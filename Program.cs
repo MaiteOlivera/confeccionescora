@@ -1,53 +1,48 @@
+using CoraConfecciones.Data;
+using CoraConfecciones.Models;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseSqlite(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    );
+});
 
 var app = builder.Build();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-var servicios = new List<Servicio>
-{
-    new Servicio
-    {
-        Id = 1,
-        Nombre = "Confección a medida",
-        Descripcion = "Prendas confeccionadas de forma personalizada."
-    },
-    new Servicio
-    {
-        Id = 2,
-        Nombre = "Arreglos de prendas",
-        Descripcion = "Ajustes y modificaciones según tus necesidades."
-    }
-};
-
 
 // ============================================
 // OBTENER TODOS LOS SERVICIOS
 // ============================================
 
-app.MapGet("/api/servicios", () =>
+app.MapGet("/api/servicios", async (AppDbContext db) =>
 {
+    var servicios = await db.Servicios.ToListAsync();
+
     return Results.Ok(servicios);
 });
 
 
 // ============================================
-// OBTENER UN SERVICIO POR ID
+// OBTENER SERVICIO POR ID
 // ============================================
 
-app.MapGet("/api/servicios/{id}", (int id) =>
+app.MapGet("/api/servicios/{id}", async (
+    int id,
+    AppDbContext db
+) =>
 {
-    var servicio = servicios.FirstOrDefault(s => s.Id == id);
+    var servicio = await db.Servicios.FindAsync(id);
 
     if (servicio == null)
     {
-        return Results.NotFound(
-            new
-            {
-                mensaje = "Servicio no encontrado."
-            }
-        );
+        return Results.NotFound();
     }
 
     return Results.Ok(servicio);
@@ -58,33 +53,14 @@ app.MapGet("/api/servicios/{id}", (int id) =>
 // AGREGAR SERVICIO
 // ============================================
 
-app.MapPost("/api/servicios", (Servicio servicio) =>
+app.MapPost("/api/servicios", async (
+    Servicio servicio,
+    AppDbContext db
+) =>
 {
-    if (string.IsNullOrWhiteSpace(servicio.Nombre))
-    {
-        return Results.BadRequest(
-            new
-            {
-                mensaje = "El nombre es obligatorio."
-            }
-        );
-    }
+    db.Servicios.Add(servicio);
 
-    if (string.IsNullOrWhiteSpace(servicio.Descripcion))
-    {
-        return Results.BadRequest(
-            new
-            {
-                mensaje = "La descripción es obligatoria."
-            }
-        );
-    }
-
-    servicio.Id = servicios.Count == 0
-        ? 1
-        : servicios.Max(s => s.Id) + 1;
-
-    servicios.Add(servicio);
+    await db.SaveChangesAsync();
 
     return Results.Created(
         $"/api/servicios/{servicio.Id}",
@@ -97,42 +73,26 @@ app.MapPost("/api/servicios", (Servicio servicio) =>
 // EDITAR SERVICIO
 // ============================================
 
-app.MapPut("/api/servicios/{id}", (int id, Servicio servicioActualizado) =>
+app.MapPut("/api/servicios/{id}", async (
+    int id,
+    Servicio actualizado,
+    AppDbContext db
+) =>
 {
-    var servicio = servicios.FirstOrDefault(s => s.Id == id);
+    var servicio = await db.Servicios.FindAsync(id);
 
     if (servicio == null)
     {
-        return Results.NotFound(
-            new
-            {
-                mensaje = "Servicio no encontrado."
-            }
-        );
+        return Results.NotFound();
     }
 
-    if (string.IsNullOrWhiteSpace(servicioActualizado.Nombre))
-    {
-        return Results.BadRequest(
-            new
-            {
-                mensaje = "El nombre es obligatorio."
-            }
-        );
-    }
+    servicio.Nombre = actualizado.Nombre;
+    servicio.Descripcion = actualizado.Descripcion;
+    servicio.Precio = actualizado.Precio;
+    servicio.Imagen = actualizado.Imagen;
+    servicio.Activo = actualizado.Activo;
 
-    if (string.IsNullOrWhiteSpace(servicioActualizado.Descripcion))
-    {
-        return Results.BadRequest(
-            new
-            {
-                mensaje = "La descripción es obligatoria."
-            }
-        );
-    }
-
-    servicio.Nombre = servicioActualizado.Nombre;
-    servicio.Descripcion = servicioActualizado.Descripcion;
+    await db.SaveChangesAsync();
 
     return Results.Ok(servicio);
 });
@@ -142,43 +102,29 @@ app.MapPut("/api/servicios/{id}", (int id, Servicio servicioActualizado) =>
 // ELIMINAR SERVICIO
 // ============================================
 
-app.MapDelete("/api/servicios/{id}", (int id) =>
+app.MapDelete("/api/servicios/{id}", async (
+    int id,
+    AppDbContext db
+) =>
 {
-    var servicio = servicios.FirstOrDefault(s => s.Id == id);
+    var servicio = await db.Servicios.FindAsync(id);
 
     if (servicio == null)
     {
-        return Results.NotFound(
-            new
-            {
-                mensaje = "Servicio no encontrado."
-            }
-        );
+        return Results.NotFound();
     }
 
-    servicios.Remove(servicio);
+    db.Servicios.Remove(servicio);
+
+    await db.SaveChangesAsync();
 
     return Results.Ok(
         new
         {
-            mensaje = "Servicio eliminado correctamente."
+            mensaje = "Servicio eliminado correctamente"
         }
     );
 });
 
 
 app.Run();
-
-
-// ============================================
-// CLASE SERVICIO
-// ============================================
-
-class Servicio
-{
-    public int Id { get; set; }
-
-    public string Nombre { get; set; } = "";
-
-    public string Descripcion { get; set; } = "";
-}
