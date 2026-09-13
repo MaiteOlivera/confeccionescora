@@ -1,3 +1,7 @@
+// ==========================================
+// ELEMENTOS DEL PANEL
+// ==========================================
+
 const enlacesMenu =
     document.querySelectorAll(".admin-link");
 
@@ -25,6 +29,9 @@ const inputPrecio =
 const inputImagen =
     document.querySelector("#imagen-servicio");
 
+const previewImagen =
+    document.querySelector("#preview-imagen");
+
 const tituloFormulario =
     document.querySelector("#titulo-formulario");
 
@@ -39,6 +46,12 @@ const contador =
 
 const cantidadInicio =
     document.querySelector("#cantidad-servicios");
+
+
+// Guarda la imagen que ya tenía el servicio
+// cuando estamos editando.
+
+let imagenActual = null;
 
 
 // ==========================================
@@ -75,40 +88,70 @@ enlacesMenu.forEach(boton => {
 // CARGAR SERVICIOS
 // ==========================================
 
-async function cargarServicios(){
+async function cargarServicios() {
 
-    try{
+    if (!listaServicios) {
+        return;
+    }
+
+    try {
 
         const respuesta =
-            await fetch("/api/servicios");
+            await fetch("/api/servicios", {
+                cache: "no-store"
+            });
 
-        if(!respuesta.ok){
+        if (respuesta.status === 401) {
+
+            window.location.href =
+                "/login.html";
+
+            return;
+        }
+
+        if (!respuesta.ok) {
+
             throw new Error(
-                "No se pudieron cargar los servicios"
+                "No se pudieron cargar los servicios."
             );
+
         }
 
         const servicios =
             await respuesta.json();
 
-        contador.textContent =
-            `${servicios.length} servicio${
-                servicios.length === 1 ? "" : "s"
-            }`;
 
-        cantidadInicio.textContent =
-            servicios.length;
+        if (contador) {
+
+            contador.textContent =
+                `${servicios.length} servicio${
+                    servicios.length === 1
+                        ? ""
+                        : "s"
+                }`;
+
+        }
+
+
+        if (cantidadInicio) {
+
+            cantidadInicio.textContent =
+                servicios.length;
+
+        }
+
 
         mostrarServicios(servicios);
 
-    }catch(error){
+    } catch (error) {
 
         console.error(error);
 
-        listaServicios.innerHTML =
-            `<p class="sin-servicios">
+        listaServicios.innerHTML = `
+            <p class="sin-servicios">
                 No se pudieron cargar los servicios.
-            </p>`;
+            </p>
+        `;
 
     }
 
@@ -119,16 +162,18 @@ async function cargarServicios(){
 // MOSTRAR SERVICIOS
 // ==========================================
 
-function mostrarServicios(servicios){
+function mostrarServicios(servicios) {
 
     listaServicios.innerHTML = "";
 
-    if(servicios.length === 0){
 
-        listaServicios.innerHTML =
-            `<p class="sin-servicios">
+    if (servicios.length === 0) {
+
+        listaServicios.innerHTML = `
+            <p class="sin-servicios">
                 Todavía no hay servicios.
-            </p>`;
+            </p>
+        `;
 
         return;
     }
@@ -143,9 +188,36 @@ function mostrarServicios(servicios){
             "servicio-admin-item";
 
 
+        // ==================================
+        // CONTENIDO
+        // ==================================
+
         const contenido =
             document.createElement("div");
 
+
+        // Imagen
+
+        if (servicio.imagen) {
+
+            const imagen =
+                document.createElement("img");
+
+            imagen.src =
+                servicio.imagen;
+
+            imagen.alt =
+                servicio.nombre;
+
+            imagen.className =
+                "imagen-servicio-admin";
+
+            contenido.appendChild(imagen);
+
+        }
+
+
+        // Nombre
 
         const titulo =
             document.createElement("h4");
@@ -153,6 +225,8 @@ function mostrarServicios(servicios){
         titulo.textContent =
             servicio.nombre;
 
+
+        // Descripción
 
         const descripcion =
             document.createElement("p");
@@ -162,10 +236,16 @@ function mostrarServicios(servicios){
 
 
         contenido.appendChild(titulo);
+
         contenido.appendChild(descripcion);
 
 
-        if(servicio.precio !== null){
+        // Precio
+
+        if (
+            servicio.precio !== null &&
+            servicio.precio !== undefined
+        ) {
 
             const precio =
                 document.createElement("p");
@@ -181,6 +261,10 @@ function mostrarServicios(servicios){
         }
 
 
+        // ==================================
+        // BOTONES
+        // ==================================
+
         const acciones =
             document.createElement("div");
 
@@ -188,8 +272,13 @@ function mostrarServicios(servicios){
             "acciones-servicio";
 
 
+        // Editar
+
         const editar =
             document.createElement("button");
+
+        editar.type =
+            "button";
 
         editar.className =
             "btn-editar";
@@ -203,8 +292,13 @@ function mostrarServicios(servicios){
         );
 
 
+        // Eliminar
+
         const eliminar =
             document.createElement("button");
+
+        eliminar.type =
+            "button";
 
         eliminar.className =
             "btn-eliminar";
@@ -219,10 +313,14 @@ function mostrarServicios(servicios){
 
 
         acciones.appendChild(editar);
+
         acciones.appendChild(eliminar);
 
+
         item.appendChild(contenido);
+
         item.appendChild(acciones);
+
 
         listaServicios.appendChild(item);
 
@@ -232,7 +330,127 @@ function mostrarServicios(servicios){
 
 
 // ==========================================
-// AGREGAR / EDITAR
+// SUBIR IMAGEN
+// ==========================================
+
+async function subirImagen() {
+
+    const archivo =
+        inputImagen.files[0];
+
+
+    if (!archivo) {
+
+        return imagenActual;
+
+    }
+
+
+    // Validar tipo
+
+    const tiposPermitidos = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ];
+
+
+    if (!tiposPermitidos.includes(archivo.type)) {
+
+        throw new Error(
+            "La imagen debe ser JPG, PNG o WEBP."
+        );
+
+    }
+
+
+    // Máximo 5 MB
+
+    const maximo =
+        5 * 1024 * 1024;
+
+
+    if (archivo.size > maximo) {
+
+        throw new Error(
+            "La imagen no puede superar los 5 MB."
+        );
+
+    }
+
+
+    const formData =
+        new FormData();
+
+
+    formData.append(
+        "imagen",
+        archivo
+    );
+
+
+    const respuesta =
+        await fetch(
+            "/api/admin/upload",
+            {
+
+                method: "POST",
+
+                credentials: "same-origin",
+
+                body: formData
+
+            }
+        );
+
+
+    if (respuesta.status === 401) {
+
+        window.location.href =
+            "/login.html";
+
+        return null;
+
+    }
+
+
+    if (!respuesta.ok) {
+
+        let mensaje =
+            "No se pudo subir la imagen.";
+
+
+        try {
+
+            const error =
+                await respuesta.json();
+
+            mensaje =
+                error.mensaje || mensaje;
+
+        } catch {
+
+            // Dejamos mensaje genérico.
+
+        }
+
+
+        throw new Error(mensaje);
+
+    }
+
+
+    const datos =
+        await respuesta.json();
+
+
+    return datos.url;
+
+}
+
+
+// ==========================================
+// AGREGAR / EDITAR SERVICIO
 // ==========================================
 
 formServicio.addEventListener(
@@ -241,67 +459,142 @@ formServicio.addEventListener(
 
         e.preventDefault();
 
+
         const id =
             inputId.value;
 
-        const datos = {
 
-            nombre:
-                inputNombre.value.trim(),
+        // Desactivar botón mientras guarda
 
-            descripcion:
-                inputDescripcion.value.trim(),
+        btnGuardar.disabled =
+            true;
 
-            precio:
-                inputPrecio.value
-                    ? Number(inputPrecio.value)
-                    : null,
+        const textoAnterior =
+            btnGuardar.textContent;
 
-            imagen:
-                inputImagen.value.trim() || null,
-
-            activo:true
-
-        };
+        btnGuardar.textContent =
+            "Guardando...";
 
 
-        const editando =
-            id !== "";
+        try {
+
+            // ==================================
+            // SUBIR IMAGEN
+            // ==================================
+
+            let rutaImagen =
+                imagenActual;
 
 
-        const url =
-            editando
-                ? `/api/servicios/${id}`
-                : "/api/servicios";
+            if (
+                inputImagen &&
+                inputImagen.files.length > 0
+            ) {
+
+                rutaImagen =
+                    await subirImagen();
+
+            }
 
 
-        const metodo =
-            editando
-                ? "PUT"
-                : "POST";
+            // ==================================
+            // DATOS DEL SERVICIO
+            // ==================================
+
+            const datos = {
+
+                nombre:
+                    inputNombre.value.trim(),
+
+                descripcion:
+                    inputDescripcion.value.trim(),
+
+                precio:
+                    inputPrecio.value
+                        ? Number(inputPrecio.value)
+                        : null,
+
+                imagen:
+                    rutaImagen,
+
+                activo:
+                    true
+
+            };
 
 
-        try{
+            // Validar campos
+
+            if (!datos.nombre) {
+
+                alert(
+                    "Ingresá el nombre del servicio."
+                );
+
+                return;
+
+            }
+
+
+            if (!datos.descripcion) {
+
+                alert(
+                    "Ingresá una descripción."
+                );
+
+                return;
+
+            }
+
+
+            // ==================================
+            // SABER SI ES NUEVO O EDICIÓN
+            // ==================================
+
+            const editando =
+                id !== "";
+
+
+            const url =
+                editando
+                    ? `/api/servicios/${id}`
+                    : "/api/servicios";
+
+
+            const metodo =
+                editando
+                    ? "PUT"
+                    : "POST";
+
+
+            // ==================================
+            // GUARDAR
+            // ==================================
 
             const respuesta =
-                await fetch(url,{
+                await fetch(
+                    url,
+                    {
 
-                    method:metodo,
+                        method:
+                            metodo,
 
-                    headers:{
-                        "Content-Type":
-                            "application/json"
-                    },
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
 
-                    credentials:"same-origin",
+                        credentials:
+                            "same-origin",
 
-                    body:
-                        JSON.stringify(datos)
+                        body:
+                            JSON.stringify(datos)
 
-                });
+                    }
+                );
 
 
-            if(respuesta.status === 401){
+            if (respuesta.status === 401) {
 
                 window.location.href =
                     "/login.html";
@@ -311,29 +604,83 @@ formServicio.addEventListener(
             }
 
 
-            if(!respuesta.ok){
+            if (!respuesta.ok) {
 
-                alert(
-                    "No se pudo guardar el servicio."
-                );
+                let mensaje =
+                    "No se pudo guardar el servicio.";
+
+
+                try {
+
+                    const error =
+                        await respuesta.json();
+
+                    mensaje =
+                        error.mensaje || mensaje;
+
+                } catch {
+
+                    // Usamos mensaje general.
+
+                }
+
+
+                alert(mensaje);
 
                 return;
 
             }
 
 
+            // ==================================
+            // CORRECTO
+            // ==================================
+
             limpiarFormulario();
 
             await cargarServicios();
 
 
-        }catch(error){
+            if (editando) {
+
+                alert(
+                    "Servicio actualizado correctamente."
+                );
+
+            } else {
+
+                alert(
+                    "Servicio agregado correctamente."
+                );
+
+            }
+
+
+        } catch (error) {
 
             console.error(error);
 
             alert(
+                error.message ||
                 "Error al conectar con el servidor."
             );
+
+        } finally {
+
+            btnGuardar.disabled =
+                false;
+
+            if (inputId.value === "") {
+
+                btnGuardar.textContent =
+                    "Agregar servicio";
+
+            } else {
+
+                btnGuardar.textContent =
+                    textoAnterior;
+
+            }
 
         }
 
@@ -342,40 +689,112 @@ formServicio.addEventListener(
 
 
 // ==========================================
-// EDITAR
+// EDITAR SERVICIO
 // ==========================================
 
-function editarServicio(servicio){
+function editarServicio(servicio) {
 
     inputId.value =
         servicio.id;
 
+
     inputNombre.value =
         servicio.nombre;
+
 
     inputDescripcion.value =
         servicio.descripcion;
 
+
     inputPrecio.value =
         servicio.precio ?? "";
 
-    inputImagen.value =
-        servicio.imagen ?? "";
+
+    // Guardamos la imagen existente.
+
+    imagenActual =
+        servicio.imagen ?? null;
+
+
+    // NO intentamos hacer:
+    //
+    // inputImagen.value = servicio.imagen
+    //
+    // porque un input type="file"
+    // no permite eso.
+
+
+    if (inputImagen) {
+
+        inputImagen.value =
+            "";
+
+    }
+
+
+    // Mostrar imagen actual.
+
+    if (
+        imagenActual &&
+        previewImagen
+    ) {
+
+        previewImagen.src =
+            imagenActual;
+
+        previewImagen.hidden =
+            false;
+
+    } else if (previewImagen) {
+
+        previewImagen.src =
+            "";
+
+        previewImagen.hidden =
+            true;
+
+    }
 
 
     tituloFormulario.textContent =
         "Editar servicio";
 
+
     btnGuardar.textContent =
         "Guardar cambios";
+
 
     btnCancelar.hidden =
         false;
 
 
+    // Mostrar sección Servicios.
+
+    secciones.forEach(seccion =>
+        seccion.classList.remove("activa")
+    );
+
+
+    document
+        .querySelector("#seccion-servicios")
+        ?.classList.add("activa");
+
+
+    enlacesMenu.forEach(item =>
+        item.classList.remove("activo")
+    );
+
+
+    document
+        .querySelector(
+            '[data-seccion="servicios"]'
+        )
+        ?.classList.add("activo");
+
+
     window.scrollTo({
-        top:0,
-        behavior:"smooth"
+        top: 0,
+        behavior: "smooth"
     });
 
 }
@@ -391,17 +810,41 @@ btnCancelar.addEventListener(
 );
 
 
-function limpiarFormulario(){
+// ==========================================
+// LIMPIAR FORMULARIO
+// ==========================================
+
+function limpiarFormulario() {
 
     formServicio.reset();
 
-    inputId.value = "";
+
+    inputId.value =
+        "";
+
+
+    imagenActual =
+        null;
+
+
+    if (previewImagen) {
+
+        previewImagen.src =
+            "";
+
+        previewImagen.hidden =
+            true;
+
+    }
+
 
     tituloFormulario.textContent =
         "Agregar servicio";
 
+
     btnGuardar.textContent =
         "Agregar servicio";
+
 
     btnCancelar.hidden =
         true;
@@ -410,34 +853,130 @@ function limpiarFormulario(){
 
 
 // ==========================================
-// ELIMINAR
+// VISTA PREVIA DE IMAGEN
 // ==========================================
 
-async function eliminarServicio(id){
+if (
+    inputImagen &&
+    previewImagen
+) {
+
+    inputImagen.addEventListener(
+        "change",
+        () => {
+
+            const archivo =
+                inputImagen.files[0];
+
+
+            if (!archivo) {
+
+                if (imagenActual) {
+
+                    previewImagen.src =
+                        imagenActual;
+
+                    previewImagen.hidden =
+                        false;
+
+                } else {
+
+                    previewImagen.src =
+                        "";
+
+                    previewImagen.hidden =
+                        true;
+
+                }
+
+                return;
+
+            }
+
+
+            // Validar tipo
+
+            const tiposPermitidos = [
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            ];
+
+
+            if (
+                !tiposPermitidos.includes(
+                    archivo.type
+                )
+            ) {
+
+                alert(
+                    "Seleccioná una imagen JPG, PNG o WEBP."
+                );
+
+                inputImagen.value =
+                    "";
+
+                return;
+
+            }
+
+
+            // Mostrar preview
+
+            const urlTemporal =
+                URL.createObjectURL(archivo);
+
+
+            previewImagen.src =
+                urlTemporal;
+
+
+            previewImagen.hidden =
+                false;
+
+        }
+    );
+
+}
+
+
+// ==========================================
+// ELIMINAR SERVICIO
+// ==========================================
+
+async function eliminarServicio(id) {
 
     const confirmar =
         confirm(
             "¿Seguro que querés eliminar este servicio?"
         );
 
-    if(!confirmar){
+
+    if (!confirmar) {
+
         return;
+
     }
 
 
-    try{
+    try {
 
         const respuesta =
             await fetch(
                 `/api/servicios/${id}`,
                 {
-                    method:"DELETE",
-                    credentials:"same-origin"
+
+                    method:
+                        "DELETE",
+
+                    credentials:
+                        "same-origin"
+
                 }
             );
 
 
-        if(respuesta.status === 401){
+        if (respuesta.status === 401) {
 
             window.location.href =
                 "/login.html";
@@ -447,7 +986,7 @@ async function eliminarServicio(id){
         }
 
 
-        if(!respuesta.ok){
+        if (!respuesta.ok) {
 
             alert(
                 "No se pudo eliminar el servicio."
@@ -461,9 +1000,13 @@ async function eliminarServicio(id){
         await cargarServicios();
 
 
-    }catch(error){
+    } catch (error) {
 
         console.error(error);
+
+        alert(
+            "Error al eliminar el servicio."
+        );
 
     }
 
@@ -474,25 +1017,45 @@ async function eliminarServicio(id){
 // CERRAR SESIÓN
 // ==========================================
 
-document
-    .querySelector("#btn-logout")
-    .addEventListener(
+const btnLogout =
+    document.querySelector("#btn-logout");
+
+
+if (btnLogout) {
+
+    btnLogout.addEventListener(
         "click",
         async () => {
 
-            await fetch(
-                "/api/admin/logout",
-                {
-                    method:"POST",
-                    credentials:"same-origin"
-                }
-            );
+            try {
+
+                await fetch(
+                    "/api/admin/logout",
+                    {
+
+                        method:
+                            "POST",
+
+                        credentials:
+                            "same-origin"
+
+                    }
+                );
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
+
 
             window.location.href =
                 "/login.html";
 
         }
     );
+
+}
 
 
 // ==========================================

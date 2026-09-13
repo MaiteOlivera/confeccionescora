@@ -574,3 +574,113 @@ body{
     }
 
 }
+
+.ayuda-imagen{
+    margin-top:8px;
+    font-size:13px;
+    color:#718096;
+}
+
+.preview-imagen{
+    width:100%;
+    max-height:250px;
+    margin-top:15px;
+    border-radius:12px;
+    object-fit:cover;
+}
+
+.ayuda-imagen{
+    margin-top:8px;
+    font-size:13px;
+    color:#718096;
+}
+
+.preview-imagen{
+    width:100%;
+    height:220px;
+    margin-top:15px;
+    display:block;
+    object-fit:cover;
+    border-radius:12px;
+}
+
+.preview-imagen[hidden]{
+    display:none;
+}
+
+.imagen-servicio-admin{
+    width:100%;
+    max-width:180px;
+    height:120px;
+    margin-bottom:15px;
+    object-fit:cover;
+    border-radius:10px;
+}
+
+/* ================================
+   CORRECCIÓN FORMULARIO SERVICIOS
+================================ */
+
+.formulario-servicio form{
+    display:block;
+    width:100%;
+}
+
+.botones-form{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:12px;
+    margin-top:20px;
+}
+
+.formulario-servicio .btn-principal{
+    width:auto;
+    height:48px;
+    min-height:48px;
+    padding:0 28px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border:none;
+    border-radius:25px;
+    background:#FFA7A6;
+    color:#3F5F7F;
+    font-size:16px;
+    cursor:pointer;
+    align-self:auto;
+}
+
+.formulario-servicio .btn-principal:hover{
+    transform:translateY(-2px);
+}
+
+
+/* INPUT PARA ELEGIR IMAGEN */
+
+.campo-admin input[type="file"]{
+    width:100%;
+    padding:10px;
+    background:white;
+    border:1px solid #D5DEE7;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.campo-admin input[type="file"]::file-selector-button{
+    padding:10px 16px;
+    margin-right:12px;
+    border:none;
+    border-radius:8px;
+    background:#617FA3;
+    color:white;
+    cursor:pointer;
+}
+
+.ayuda-imagen{
+    margin-top:8px;
+    font-size:13px;
+    line-height:1.4;
+    color:#718096;
+}

@@ -1,13 +1,10 @@
 using CoraConfecciones.Data;
 using CoraConfecciones.Models;
-
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
 using System.Security.Claims;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +24,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 
 // ============================================
-// AUTENTICACIÓN
+// LOGIN / COOKIES
 // ============================================
 
 builder.Services
@@ -36,98 +33,96 @@ builder.Services
     )
     .AddCookie(options =>
     {
-        options.LoginPath="/login.html";
+        options.LoginPath = "/login.html";
 
-        options.Cookie.Name="CoraAdmin";
+        options.Cookie.Name = "CoraAdmin";
 
-        options.Cookie.HttpOnly=true;
+        options.Cookie.HttpOnly = true;
 
-        options.Cookie.SameSite=
+        options.Cookie.SameSite =
             SameSiteMode.Strict;
 
-        options.Cookie.SecurePolicy=
-            CookieSecurePolicy.SameAsRequest;
-
-        options.ExpireTimeSpan=
+        options.ExpireTimeSpan =
             TimeSpan.FromHours(2);
 
-        options.Events.OnRedirectToLogin=context =>
+        options.Events.OnRedirectToLogin = context =>
         {
-            if(
-                context.Request.Path
-                    .StartsWithSegments("/api")
-            )
+            if(context.Request.Path.StartsWithSegments("/api"))
             {
-                context.Response.StatusCode=
+                context.Response.StatusCode =
                     StatusCodes.Status401Unauthorized;
 
                 return Task.CompletedTask;
             }
 
-            context.Response.Redirect(
-                "/login.html"
-            );
+            context.Response.Redirect("/login.html");
 
             return Task.CompletedTask;
         };
     });
 
-
 builder.Services.AddAuthorization();
 
 
-var app=builder.Build();
+var app = builder.Build();
 
+
+// ============================================
+// ARCHIVOS HTML / CSS / JS
+// ============================================
 
 app.UseDefaultFiles();
+
 app.UseStaticFiles();
 
 app.UseAuthentication();
+
 app.UseAuthorization();
 
 
 // ============================================
-// CREAR ADMINISTRADOR INICIAL
+// APLICAR MIGRACIONES
 // ============================================
 
-using(var scope=app.Services.CreateScope())
+using(var scope = app.Services.CreateScope())
 {
-    var db=
-        scope.ServiceProvider
-            .GetRequiredService<AppDbContext>();
+    var db = scope.ServiceProvider
+        .GetRequiredService<AppDbContext>();
 
-    var usuarioAdmin=
+    await db.Database.MigrateAsync();
+
+
+    // ========================================
+    // CREAR ADMIN INICIAL
+    // ========================================
+
+    var usuarioAdmin =
         builder.Configuration["Admin:Usuario"];
 
-    var passwordAdmin=
+    var passwordAdmin =
         builder.Configuration["Admin:Password"];
 
     if(
-        !string.IsNullOrWhiteSpace(usuarioAdmin)
-        &&
-        !string.IsNullOrWhiteSpace(passwordAdmin)
-        &&
+        !string.IsNullOrWhiteSpace(usuarioAdmin) &&
+        !string.IsNullOrWhiteSpace(passwordAdmin) &&
         !await db.Administradores.AnyAsync()
     )
     {
-        var administrador=
-            new Administrador
-            {
-                Usuario=usuarioAdmin
-            };
+        var administrador = new Administrador
+        {
+            Usuario = usuarioAdmin
+        };
 
-        var hasher=
+        var hasher =
             new PasswordHasher<Administrador>();
 
-        administrador.PasswordHash=
+        administrador.PasswordHash =
             hasher.HashPassword(
                 administrador,
                 passwordAdmin
             );
 
-        db.Administradores.Add(
-            administrador
-        );
+        db.Administradores.Add(administrador);
 
         await db.SaveChangesAsync();
     }
@@ -135,7 +130,7 @@ using(var scope=app.Services.CreateScope())
 
 
 // ============================================
-// LOGIN ADMIN
+// LOGIN
 // ============================================
 
 app.MapPost(
@@ -146,60 +141,54 @@ app.MapPost(
         HttpContext http
     ) =>
     {
-        var administrador=
+        var administrador =
             await db.Administradores
                 .FirstOrDefaultAsync(
-                    a=>a.Usuario==datos.Usuario
+                    a => a.Usuario == datos.Usuario
                 );
 
-        if(administrador==null)
+        if(administrador == null)
         {
             return Results.Unauthorized();
         }
 
-        var hasher=
+        var hasher =
             new PasswordHasher<Administrador>();
 
-        var resultado=
+        var resultado =
             hasher.VerifyHashedPassword(
                 administrador,
                 administrador.PasswordHash,
                 datos.Password
             );
 
-        if(
-            resultado==
-            PasswordVerificationResult.Failed
-        )
+        if(resultado == PasswordVerificationResult.Failed)
         {
             return Results.Unauthorized();
         }
 
-        var claims=
-            new List<Claim>
-            {
-                new Claim(
-                    ClaimTypes.Name,
-                    administrador.Usuario
-                ),
+        var claims = new List<Claim>
+        {
+            new Claim(
+                ClaimTypes.Name,
+                administrador.Usuario
+            ),
 
-                new Claim(
-                    ClaimTypes.Role,
-                    "Administrador"
-                )
-            };
+            new Claim(
+                ClaimTypes.Role,
+                "Administrador"
+            )
+        };
 
-        var identidad=
+        var identidad =
             new ClaimsIdentity(
                 claims,
                 CookieAuthenticationDefaults
                     .AuthenticationScheme
             );
 
-        var principal=
-            new ClaimsPrincipal(
-                identidad
-            );
+        var principal =
+            new ClaimsPrincipal(identidad);
 
         await http.SignInAsync(
             CookieAuthenticationDefaults
@@ -210,8 +199,7 @@ app.MapPost(
         return Results.Ok(
             new
             {
-                mensaje=
-                    "Login correcto"
+                mensaje = "Login correcto"
             }
         );
     }
@@ -238,19 +226,18 @@ app.MapPost(
 
 
 // ============================================
-// PANEL ADMIN PROTEGIDO
+// PANEL ADMIN
 // ============================================
 
 app.MapGet(
     "/admin",
     () =>
     {
-        var archivo=
-            Path.Combine(
-                app.Environment.ContentRootPath,
-                "Admin",
-                "admin.html"
-            );
+        var archivo = Path.Combine(
+            app.Environment.ContentRootPath,
+            "Admin",
+            "admin.html"
+        );
 
         return Results.File(
             archivo,
@@ -262,22 +249,28 @@ app.MapGet(
 
 
 // ============================================
-// SERVICIOS PÚBLICOS
+// LISTAR SERVICIOS
+// PÚBLICO
 // ============================================
 
 app.MapGet(
     "/api/servicios",
     async (AppDbContext db) =>
     {
-        var servicios=
+        var servicios =
             await db.Servicios
-                .Where(s=>s.Activo)
+                .Where(s => s.Activo)
+                .OrderBy(s => s.Id)
                 .ToListAsync();
 
         return Results.Ok(servicios);
     }
 );
 
+
+// ============================================
+// OBTENER SERVICIO
+// ============================================
 
 app.MapGet(
     "/api/servicios/{id}",
@@ -286,10 +279,10 @@ app.MapGet(
         AppDbContext db
     ) =>
     {
-        var servicio=
+        var servicio =
             await db.Servicios.FindAsync(id);
 
-        if(servicio==null)
+        if(servicio == null)
         {
             return Results.NotFound();
         }
@@ -301,7 +294,6 @@ app.MapGet(
 
 // ============================================
 // AGREGAR SERVICIO
-// SOLO ADMIN
 // ============================================
 
 app.MapPost(
@@ -311,6 +303,28 @@ app.MapPost(
         AppDbContext db
     ) =>
     {
+        if(string.IsNullOrWhiteSpace(servicio.Nombre))
+        {
+            return Results.BadRequest(
+                new
+                {
+                    mensaje = "El nombre es obligatorio."
+                }
+            );
+        }
+
+        if(string.IsNullOrWhiteSpace(servicio.Descripcion))
+        {
+            return Results.BadRequest(
+                new
+                {
+                    mensaje = "La descripción es obligatoria."
+                }
+            );
+        }
+
+        servicio.Activo = true;
+
         db.Servicios.Add(servicio);
 
         await db.SaveChangesAsync();
@@ -326,7 +340,6 @@ app.MapPost(
 
 // ============================================
 // EDITAR SERVICIO
-// SOLO ADMIN
 // ============================================
 
 app.MapPut(
@@ -337,27 +350,27 @@ app.MapPut(
         AppDbContext db
     ) =>
     {
-        var servicio=
+        var servicio =
             await db.Servicios.FindAsync(id);
 
-        if(servicio==null)
+        if(servicio == null)
         {
             return Results.NotFound();
         }
 
-        servicio.Nombre=
+        servicio.Nombre =
             actualizado.Nombre;
 
-        servicio.Descripcion=
+        servicio.Descripcion =
             actualizado.Descripcion;
 
-        servicio.Precio=
+        servicio.Precio =
             actualizado.Precio;
 
-        servicio.Imagen=
+        servicio.Imagen =
             actualizado.Imagen;
 
-        servicio.Activo=
+        servicio.Activo =
             actualizado.Activo;
 
         await db.SaveChangesAsync();
@@ -370,7 +383,6 @@ app.MapPut(
 
 // ============================================
 // ELIMINAR SERVICIO
-// SOLO ADMIN
 // ============================================
 
 app.MapDelete(
@@ -380,10 +392,10 @@ app.MapDelete(
         AppDbContext db
     ) =>
     {
-        var servicio=
+        var servicio =
             await db.Servicios.FindAsync(id);
 
-        if(servicio==null)
+        if(servicio == null)
         {
             return Results.NotFound();
         }
@@ -395,8 +407,109 @@ app.MapDelete(
         return Results.Ok(
             new
             {
-                mensaje=
-                    "Servicio eliminado"
+                mensaje =
+                    "Servicio eliminado correctamente."
+            }
+        );
+    }
+)
+.RequireAuthorization();
+
+app.MapPost(
+    "/api/admin/upload",
+    async (HttpRequest request) =>
+    {
+        if(!request.HasFormContentType)
+        {
+            return Results.BadRequest(
+                new { mensaje = "No se recibió una imagen." }
+            );
+        }
+
+        var form = await request.ReadFormAsync();
+
+        var archivo = form.Files.GetFile("imagen");
+
+        if(archivo == null || archivo.Length == 0)
+        {
+            return Results.BadRequest(
+                new { mensaje = "La imagen está vacía." }
+            );
+        }
+
+
+        // Máximo 5 MB
+
+        if(archivo.Length > 5 * 1024 * 1024)
+        {
+            return Results.BadRequest(
+                new { mensaje = "La imagen no puede superar los 5 MB." }
+            );
+        }
+
+
+        var tiposPermitidos = new[]
+        {
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        };
+
+        if(!tiposPermitidos.Contains(archivo.ContentType))
+        {
+            return Results.BadRequest(
+                new
+                {
+                    mensaje =
+                        "Solo se permiten JPG, PNG o WEBP."
+                }
+            );
+        }
+
+
+        var extension =
+            Path.GetExtension(archivo.FileName)
+                .ToLowerInvariant();
+
+
+        var nombre =
+            $"{Guid.NewGuid()}{extension}";
+
+
+        var carpeta = Path.Combine(
+            app.Environment.WebRootPath,
+            "uploads"
+        );
+
+
+        Directory.CreateDirectory(carpeta);
+
+
+        var rutaCompleta =
+            Path.Combine(
+                carpeta,
+                nombre
+            );
+
+
+        await using var stream =
+            new FileStream(
+                rutaCompleta,
+                FileMode.Create
+            );
+
+
+        await archivo.CopyToAsync(stream);
+
+
+        var url =
+            $"/uploads/{nombre}";
+
+
+        return Results.Ok(
+            new
+            {
+                url
             }
         );
     }
@@ -411,4 +524,3 @@ record LoginRequest(
     string Usuario,
     string Password
 );
-
