@@ -684,3 +684,101 @@ body{
     line-height:1.4;
     color:#718096;
 }
+
+/* ==========================================
+   IMÁGENES ADMIN
+========================================== */
+
+.preview-imagen{
+    width:100%;
+    max-height:280px;
+
+    margin-top:15px;
+
+    display:block;
+
+    object-fit:cover;
+
+    border-radius:12px;
+}
+
+.preview-imagen[hidden]{
+    display:none;
+}
+
+.imagen-servicio-admin{
+    width:180px;
+    height:120px;
+
+    margin-bottom:15px;
+
+    display:block;
+
+    object-fit:cover;
+
+    border-radius:10px;
+}
+
+
+/* INPUT FILE */
+
+.campo-admin input[type="file"]{
+    width:100%;
+
+    padding:10px;
+
+    border:
+        1px solid #D5DEE7;
+
+    border-radius:10px;
+
+    background:white;
+
+    cursor:pointer;
+}
+
+.campo-admin input[type="file"]::file-selector-button{
+    margin-right:10px;
+
+    padding:10px 14px;
+
+    border:none;
+
+    border-radius:8px;
+
+    background:#617FA3;
+
+    color:white;
+
+    cursor:pointer;
+}
+
+.ayuda-imagen{
+    margin-top:8px;
+
+    font-size:13px;
+
+    line-height:1.5;
+
+    color:#718096;
+}
+
+
+/* BOTONES */
+
+.botones-form{
+    display:flex;
+    align-items:center;
+
+    gap:12px;
+
+    margin-top:20px;
+}
+
+.botones-form .btn-principal{
+    width:auto;
+
+    min-height:48px;
+
+    padding:12px 25px;
+}

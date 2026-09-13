@@ -1,34 +1,5 @@
 // ============================================
-// CONEXIÓN CON BACKEND C#
-// ============================================
-
-async function cargarServiciosDesdeBackend(){
-
-    try{
-
-        const respuesta = await fetch("/api/servicios");
-
-        if(!respuesta.ok){
-            throw new Error("No se pudieron cargar los servicios.");
-        }
-
-        const servicios = await respuesta.json();
-
-        console.log("Servicios recibidos desde C#:");
-        console.log(servicios);
-
-    }catch(error){
-
-        console.error("Error al conectar con C#:",error);
-
-    }
-
-}
-
-cargarServiciosDesdeBackend();
-
-// ============================================
-// SERVICIOS DESDE EL BACKEND
+// SERVICIOS
 // ============================================
 
 async function cargarServiciosPagina(){
@@ -43,9 +14,12 @@ async function cargarServiciosPagina(){
     try{
 
         const respuesta =
-            await fetch("/api/servicios",{
-                cache:"no-store"
-            });
+            await fetch(
+                "/api/servicios",
+                {
+                    cache:"no-store"
+                }
+            );
 
         if(!respuesta.ok){
             throw new Error(
@@ -60,16 +34,8 @@ async function cargarServiciosPagina(){
 
         if(servicios.length === 0){
 
-            const mensaje =
-                document.createElement("p");
-
-            mensaje.className =
-                "sin-servicios";
-
-            mensaje.textContent =
-                "Próximamente agregaremos nuestros servicios.";
-
-            contenedor.appendChild(mensaje);
+            contenedor.innerHTML =
+                "<p>Próximamente agregaremos nuestros servicios.</p>";
 
             return;
         }
@@ -82,8 +48,6 @@ async function cargarServiciosPagina(){
             tarjeta.className =
                 "servicio-card";
 
-
-            // IMAGEN
 
             if(servicio.imagen){
 
@@ -100,11 +64,8 @@ async function cargarServiciosPagina(){
                     "servicio-imagen";
 
                 tarjeta.appendChild(imagen);
-
             }
 
-
-            // CONTENIDO
 
             const contenido =
                 document.createElement("div");
@@ -131,12 +92,7 @@ async function cargarServiciosPagina(){
             contenido.appendChild(descripcion);
 
 
-            // PRECIO
-
-            if(
-                servicio.precio !== null &&
-                servicio.precio !== undefined
-            ){
+            if(servicio.precio != null){
 
                 const precio =
                     document.createElement("span");
@@ -148,49 +104,207 @@ async function cargarServiciosPagina(){
                     `Desde $${servicio.precio}`;
 
                 contenido.appendChild(precio);
-
             }
 
 
             tarjeta.appendChild(contenido);
 
             contenedor.appendChild(tarjeta);
-
         });
 
     }catch(error){
 
         console.error(error);
 
-        contenedor.innerHTML = "";
-
-        const mensaje =
-            document.createElement("p");
-
-        mensaje.className =
-            "error-servicios";
-
-        mensaje.textContent =
-            "No se pudieron cargar los servicios.";
-
-        contenedor.appendChild(mensaje);
-
+        contenedor.innerHTML =
+            "<p>No se pudieron cargar los servicios.</p>";
     }
-
 }
 
 
-// CARGAR CUANDO ABRE LA PÁGINA
+// ============================================
+// GALERÍA
+// ============================================
+
+async function cargarGaleriaPagina(){
+
+    const contenedor =
+        document.querySelector("#lista-galeria");
+
+    if(!contenedor){
+        return;
+    }
+
+    try{
+
+        const respuesta =
+            await fetch(
+                "/api/galeria",
+                {
+                    cache:"no-store"
+                }
+            );
+
+        if(!respuesta.ok){
+            throw new Error(
+                "No se pudo cargar la galería."
+            );
+        }
+
+        const imagenes =
+            await respuesta.json();
+
+        contenedor.innerHTML = "";
+
+        if(imagenes.length === 0){
+
+            contenedor.innerHTML =
+                "<p>Próximamente agregaremos nuevos trabajos.</p>";
+
+            return;
+        }
+
+        imagenes.forEach(imagen => {
+
+            const figura =
+                document.createElement("figure");
+
+            figura.className =
+                "galeria-item";
+
+
+            const foto =
+                document.createElement("img");
+
+            foto.src =
+                imagen.imagen;
+
+            foto.alt =
+                imagen.titulo ||
+                "Trabajo de Cora Confecciones";
+
+
+            figura.appendChild(foto);
+
+
+            if(imagen.titulo){
+
+                const titulo =
+                    document.createElement("figcaption");
+
+                titulo.textContent =
+                    imagen.titulo;
+
+                figura.appendChild(titulo);
+            }
+
+
+            contenedor.appendChild(figura);
+        });
+
+    }catch(error){
+
+        console.error(error);
+
+        contenedor.innerHTML =
+            "<p>No se pudo cargar la galería.</p>";
+    }
+}
+
+
+// ============================================
+// PREGUNTAS FRECUENTES
+// ============================================
+
+async function cargarPreguntasPagina(){
+
+    const contenedor =
+        document.querySelector("#lista-preguntas");
+
+    if(!contenedor){
+        return;
+    }
+
+    try{
+
+        const respuesta =
+            await fetch(
+                "/api/preguntas",
+                {
+                    cache:"no-store"
+                }
+            );
+
+        if(!respuesta.ok){
+            throw new Error(
+                "No se pudieron cargar las preguntas."
+            );
+        }
+
+        const preguntas =
+            await respuesta.json();
+
+        contenedor.innerHTML = "";
+
+        if(preguntas.length === 0){
+
+            contenedor.innerHTML =
+                "<p>Próximamente agregaremos preguntas frecuentes.</p>";
+
+            return;
+        }
+
+        preguntas.forEach(pregunta => {
+
+            const detalle =
+                document.createElement("details");
+
+            const titulo =
+                document.createElement("summary");
+
+            titulo.textContent =
+                pregunta.pregunta;
+
+
+            const respuestaTexto =
+                document.createElement("p");
+
+            respuestaTexto.textContent =
+                pregunta.respuesta;
+
+
+            detalle.appendChild(titulo);
+
+            detalle.appendChild(
+                respuestaTexto
+            );
+
+            contenedor.appendChild(detalle);
+        });
+
+    }catch(error){
+
+        console.error(error);
+
+        contenedor.innerHTML =
+            "<p>No se pudieron cargar las preguntas.</p>";
+    }
+}
+
+
+// ============================================
+// INICIAR PÁGINA
+// ============================================
 
 document.addEventListener(
     "DOMContentLoaded",
-    cargarServiciosPagina
-);
+    () => {
 
+        cargarServiciosPagina();
 
-// ACTUALIZAR AUTOMÁTICAMENTE CADA 5 SEGUNDOS
+        cargarGaleriaPagina();
 
-setInterval(
-    cargarServiciosPagina,
-    5000
+        cargarPreguntasPagina();
+
+    }
 );

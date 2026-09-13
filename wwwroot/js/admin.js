@@ -1,5 +1,5 @@
 // ==========================================
-// ELEMENTOS GENERALES
+// NAVEGACIÓN
 // ==========================================
 
 const enlacesMenu =
@@ -8,10 +8,6 @@ const enlacesMenu =
 const secciones =
     document.querySelectorAll(".admin-seccion");
 
-
-// ==========================================
-// NAVEGACIÓN PANEL
-// ==========================================
 
 enlacesMenu.forEach(boton => {
 
@@ -23,15 +19,12 @@ enlacesMenu.forEach(boton => {
 
         boton.classList.add("activo");
 
-
         secciones.forEach(seccion =>
             seccion.classList.remove("activa")
         );
 
-
         const nombre =
             boton.dataset.seccion;
-
 
         document
             .querySelector(`#seccion-${nombre}`)
@@ -42,9 +35,8 @@ enlacesMenu.forEach(boton => {
 });
 
 
-
 // ==========================================
-// FUNCIÓN GENERAL SUBIR IMAGEN
+// SUBIR IMAGEN
 // ==========================================
 
 async function subirImagen(input){
@@ -52,46 +44,37 @@ async function subirImagen(input){
     const archivo =
         input.files[0];
 
-
     if(!archivo){
         return null;
     }
 
-
-    const tiposPermitidos = [
+    const permitidos = [
         "image/jpeg",
         "image/png",
         "image/webp"
     ];
 
-
-    if(!tiposPermitidos.includes(archivo.type)){
+    if(!permitidos.includes(archivo.type)){
 
         throw new Error(
             "La imagen debe ser JPG, PNG o WEBP."
         );
-
     }
-
 
     if(archivo.size > 5 * 1024 * 1024){
 
         throw new Error(
             "La imagen no puede superar los 5 MB."
         );
-
     }
 
-
-    const datos =
+    const formData =
         new FormData();
 
-
-    datos.append(
+    formData.append(
         "imagen",
         archivo
     );
-
 
     const respuesta =
         await fetch(
@@ -99,10 +82,9 @@ async function subirImagen(input){
             {
                 method:"POST",
                 credentials:"same-origin",
-                body:datos
+                body:formData
             }
         );
-
 
     if(respuesta.status === 401){
 
@@ -112,12 +94,10 @@ async function subirImagen(input){
         return null;
     }
 
-
     if(!respuesta.ok){
 
         let mensaje =
             "No se pudo subir la imagen.";
-
 
         try{
 
@@ -127,192 +107,134 @@ async function subirImagen(input){
             mensaje =
                 error.mensaje || mensaje;
 
-        }catch{
-        }
-
+        }catch{}
 
         throw new Error(mensaje);
-
     }
 
-
-    const resultado =
+    const datos =
         await respuesta.json();
 
-
-    return resultado.url;
+    return datos.url;
 }
-
 
 
 // ==========================================
 // SERVICIOS
 // ==========================================
 
-const listaServicios =
-    document.querySelector(
-        "#lista-servicios-admin"
-    );
-
 const formServicio =
-    document.querySelector(
-        "#form-servicio"
-    );
+    document.querySelector("#form-servicio");
 
-const inputId =
-    document.querySelector(
-        "#servicio-id"
-    );
+const inputServicioId =
+    document.querySelector("#servicio-id");
 
 const inputNombre =
-    document.querySelector(
-        "#nombre-servicio"
-    );
+    document.querySelector("#nombre-servicio");
 
 const inputDescripcion =
-    document.querySelector(
-        "#descripcion-servicio"
-    );
+    document.querySelector("#descripcion-servicio");
 
 const inputPrecio =
-    document.querySelector(
-        "#precio-servicio"
-    );
+    document.querySelector("#precio-servicio");
 
-const inputImagen =
-    document.querySelector(
-        "#imagen-servicio"
-    );
+const inputImagenServicio =
+    document.querySelector("#imagen-servicio");
 
-const previewImagen =
-    document.querySelector(
-        "#preview-imagen"
-    );
+const previewServicio =
+    document.querySelector("#preview-imagen");
 
-const tituloFormulario =
-    document.querySelector(
-        "#titulo-formulario"
-    );
+const listaServicios =
+    document.querySelector("#lista-servicios-admin");
 
-const btnGuardar =
-    document.querySelector(
-        "#btn-guardar"
-    );
+const tituloFormularioServicio =
+    document.querySelector("#titulo-formulario");
 
-const btnCancelar =
-    document.querySelector(
-        "#btn-cancelar"
-    );
+const btnGuardarServicio =
+    document.querySelector("#btn-guardar");
 
-const contadorServicios =
-    document.querySelector(
-        "#contador-servicios"
-    );
+const btnCancelarServicio =
+    document.querySelector("#btn-cancelar");
 
 const cantidadServicios =
-    document.querySelector(
-        "#cantidad-servicios"
-    );
+    document.querySelector("#cantidad-servicios");
+
+const contadorServicios =
+    document.querySelector("#contador-servicios");
 
 
-let imagenServicioActual =
-    null;
+let imagenServicioActual = null;
 
 
+// PREVIEW
 
-// ==========================================
-// PREVIEW SERVICIO
-// ==========================================
-
-inputImagen?.addEventListener(
+inputImagenServicio?.addEventListener(
     "change",
     () => {
 
         const archivo =
-            inputImagen.files[0];
-
+            inputImagenServicio.files[0];
 
         if(!archivo){
-
-            if(imagenServicioActual){
-
-                previewImagen.src =
-                    imagenServicioActual;
-
-                previewImagen.hidden =
-                    false;
-
-            }else{
-
-                previewImagen.hidden =
-                    true;
-
-            }
-
             return;
         }
 
-
-        previewImagen.src =
+        previewServicio.src =
             URL.createObjectURL(archivo);
 
-        previewImagen.hidden =
+        previewServicio.hidden =
             false;
 
     }
 );
 
 
-
-// ==========================================
-// CARGAR SERVICIOS
-// ==========================================
+// CARGAR
 
 async function cargarServicios(){
+
+    if(!listaServicios){
+        return;
+    }
 
     try{
 
         const respuesta =
-            await fetch(
-                "/api/servicios",
-                {
-                    cache:"no-store"
-                }
-            );
+            await fetch("/api/servicios",{
+                cache:"no-store"
+            });
 
+        if(!respuesta.ok){
+            throw new Error();
+        }
 
         const servicios =
             await respuesta.json();
 
+        if(cantidadServicios){
+            cantidadServicios.textContent =
+                servicios.length;
+        }
 
-        cantidadServicios.textContent =
-            servicios.length;
+        if(contadorServicios){
 
+            contadorServicios.textContent =
+                `${servicios.length} servicio${
+                    servicios.length === 1
+                        ? ""
+                        : "s"
+                }`;
+        }
 
-        contadorServicios.textContent =
-            `${servicios.length} servicio${
-                servicios.length === 1
-                    ? ""
-                    : "s"
-            }`;
-
-
-        listaServicios.innerHTML =
-            "";
-
+        listaServicios.innerHTML = "";
 
         if(servicios.length === 0){
 
             listaServicios.innerHTML =
-                `
-                <p class="sin-servicios">
-                    Todavía no hay servicios.
-                </p>
-                `;
+                "<p>No hay servicios todavía.</p>";
 
             return;
         }
-
 
         servicios.forEach(servicio => {
 
@@ -329,22 +251,19 @@ async function cargarServicios(){
 
             if(servicio.imagen){
 
-                const imagen =
+                const img =
                     document.createElement("img");
 
-                imagen.src =
+                img.src =
                     servicio.imagen;
 
-                imagen.alt =
+                img.alt =
                     servicio.nombre;
 
-                imagen.className =
+                img.className =
                     "imagen-servicio-admin";
 
-                contenido.appendChild(
-                    imagen
-                );
-
+                contenido.appendChild(img);
             }
 
 
@@ -362,13 +281,8 @@ async function cargarServicios(){
                 servicio.descripcion;
 
 
-            contenido.appendChild(
-                titulo
-            );
-
-            contenido.appendChild(
-                descripcion
-            );
+            contenido.appendChild(titulo);
+            contenido.appendChild(descripcion);
 
 
             if(servicio.precio != null){
@@ -382,10 +296,7 @@ async function cargarServicios(){
                 precio.textContent =
                     `$ ${servicio.precio}`;
 
-                contenido.appendChild(
-                    precio
-                );
-
+                contenido.appendChild(precio);
             }
 
 
@@ -399,57 +310,38 @@ async function cargarServicios(){
             const editar =
                 document.createElement("button");
 
-            editar.type =
-                "button";
-
-            editar.className =
-                "btn-editar";
-
-            editar.textContent =
-                "Editar";
+            editar.type = "button";
+            editar.className = "btn-editar";
+            editar.textContent = "Editar";
 
             editar.addEventListener(
                 "click",
-                () =>
-                    editarServicio(servicio)
+                () => editarServicio(servicio)
             );
 
 
             const eliminar =
                 document.createElement("button");
 
-            eliminar.type =
-                "button";
-
-            eliminar.className =
-                "btn-eliminar";
-
-            eliminar.textContent =
-                "Eliminar";
+            eliminar.type = "button";
+            eliminar.className = "btn-eliminar";
+            eliminar.textContent = "Eliminar";
 
             eliminar.addEventListener(
                 "click",
-                () =>
-                    eliminarServicio(servicio.id)
+                () => eliminarServicio(servicio.id)
             );
 
 
             acciones.appendChild(editar);
-
             acciones.appendChild(eliminar);
 
-
             item.appendChild(contenido);
-
             item.appendChild(acciones);
 
-
-            listaServicios.appendChild(
-                item
-            );
+            listaServicios.appendChild(item);
 
         });
-
 
     }catch(error){
 
@@ -457,16 +349,11 @@ async function cargarServicios(){
 
         listaServicios.innerHTML =
             "<p>No se pudieron cargar los servicios.</p>";
-
     }
-
 }
 
 
-
-// ==========================================
-// GUARDAR SERVICIO
-// ==========================================
+// GUARDAR
 
 formServicio?.addEventListener(
     "submit",
@@ -474,26 +361,21 @@ formServicio?.addEventListener(
 
         e.preventDefault();
 
-
         try{
 
             const id =
-                inputId.value;
+                inputServicioId.value;
 
-
-            let rutaImagen =
+            let imagen =
                 imagenServicioActual;
 
+            if(inputImagenServicio.files.length){
 
-            if(inputImagen.files.length){
-
-                rutaImagen =
+                imagen =
                     await subirImagen(
-                        inputImagen
+                        inputImagenServicio
                     );
-
             }
-
 
             const datos = {
 
@@ -508,17 +390,13 @@ formServicio?.addEventListener(
                         ? Number(inputPrecio.value)
                         : null,
 
-                imagen:
-                    rutaImagen,
+                imagen,
 
                 activo:true
-
             };
-
 
             const editando =
                 id !== "";
-
 
             const respuesta =
                 await fetch(
@@ -526,7 +404,6 @@ formServicio?.addEventListener(
                         ? `/api/servicios/${id}`
                         : "/api/servicios",
                     {
-
                         method:
                             editando
                                 ? "PUT"
@@ -542,10 +419,8 @@ formServicio?.addEventListener(
 
                         body:
                             JSON.stringify(datos)
-
                     }
                 );
-
 
             if(respuesta.status === 401){
 
@@ -554,7 +429,6 @@ formServicio?.addEventListener(
 
                 return;
             }
-
 
             if(!respuesta.ok){
 
@@ -565,32 +439,23 @@ formServicio?.addEventListener(
                 return;
             }
 
-
             limpiarServicio();
 
             await cargarServicios();
-
 
         }catch(error){
 
             console.error(error);
 
             alert(error.message);
-
         }
-
     }
 );
 
 
-
-// ==========================================
-// EDITAR SERVICIO
-// ==========================================
-
 function editarServicio(servicio){
 
-    inputId.value =
+    inputServicioId.value =
         servicio.id;
 
     inputNombre.value =
@@ -602,86 +467,64 @@ function editarServicio(servicio){
     inputPrecio.value =
         servicio.precio ?? "";
 
-
     imagenServicioActual =
         servicio.imagen ?? null;
 
-
-    inputImagen.value =
-        "";
-
+    inputImagenServicio.value = "";
 
     if(imagenServicioActual){
 
-        previewImagen.src =
+        previewServicio.src =
             imagenServicioActual;
 
-        previewImagen.hidden =
+        previewServicio.hidden =
             false;
 
     }else{
 
-        previewImagen.hidden =
+        previewServicio.hidden =
             true;
-
     }
 
-
-    tituloFormulario.textContent =
+    tituloFormularioServicio.textContent =
         "Editar servicio";
 
-    btnGuardar.textContent =
+    btnGuardarServicio.textContent =
         "Guardar cambios";
 
-    btnCancelar.hidden =
+    btnCancelarServicio.hidden =
         false;
-
 }
 
-
-
-// ==========================================
-// LIMPIAR SERVICIO
-// ==========================================
 
 function limpiarServicio(){
 
     formServicio.reset();
 
-    inputId.value =
-        "";
+    inputServicioId.value = "";
 
-    imagenServicioActual =
-        null;
+    imagenServicioActual = null;
 
-    previewImagen.src =
-        "";
+    previewServicio.src = "";
 
-    previewImagen.hidden =
-        true;
+    previewServicio.hidden = true;
 
-    tituloFormulario.textContent =
+    tituloFormularioServicio.textContent =
         "Agregar servicio";
 
-    btnGuardar.textContent =
+    btnGuardarServicio.textContent =
         "Agregar servicio";
 
-    btnCancelar.hidden =
+    btnCancelarServicio.hidden =
         true;
-
 }
 
 
-btnCancelar?.addEventListener(
+btnCancelarServicio?.addEventListener(
     "click",
     limpiarServicio
 );
 
-
-
-// ==========================================
-// ELIMINAR SERVICIO
-// ==========================================
 
 async function eliminarServicio(id){
 
@@ -693,30 +536,16 @@ async function eliminarServicio(id){
         return;
     }
 
-
-    const respuesta =
-        await fetch(
-            `/api/servicios/${id}`,
-            {
-                method:"DELETE",
-                credentials:"same-origin"
-            }
-        );
-
-
-    if(respuesta.status === 401){
-
-        window.location.href =
-            "/login.html";
-
-        return;
-    }
-
+    await fetch(
+        `/api/servicios/${id}`,
+        {
+            method:"DELETE",
+            credentials:"same-origin"
+        }
+    );
 
     await cargarServicios();
-
 }
-
 
 
 // ==========================================
@@ -724,160 +553,111 @@ async function eliminarServicio(id){
 // ==========================================
 
 const formGaleria =
-    document.querySelector(
-        "#form-galeria"
-    );
+    document.querySelector("#form-galeria");
 
 const galeriaId =
-    document.querySelector(
-        "#galeria-id"
-    );
+    document.querySelector("#galeria-id");
 
 const tituloGaleria =
-    document.querySelector(
-        "#titulo-galeria"
-    );
+    document.querySelector("#titulo-galeria");
 
-const inputGaleria =
-    document.querySelector(
-        "#imagen-galeria"
-    );
+const imagenGaleria =
+    document.querySelector("#imagen-galeria");
 
 const previewGaleria =
-    document.querySelector(
-        "#preview-galeria"
-    );
+    document.querySelector("#preview-galeria");
 
-const listaGaleriaAdmin =
-    document.querySelector(
-        "#lista-galeria-admin"
-    );
+const listaGaleria =
+    document.querySelector("#lista-galeria-admin");
 
 const tituloFormGaleria =
-    document.querySelector(
-        "#titulo-form-galeria"
-    );
+    document.querySelector("#titulo-form-galeria");
 
 const btnGuardarGaleria =
-    document.querySelector(
-        "#btn-guardar-galeria"
-    );
+    document.querySelector("#btn-guardar-galeria");
 
 const btnCancelarGaleria =
-    document.querySelector(
-        "#btn-cancelar-galeria"
-    );
-
-const contadorGaleria =
-    document.querySelector(
-        "#contador-galeria"
-    );
+    document.querySelector("#btn-cancelar-galeria");
 
 const cantidadGaleria =
-    document.querySelector(
-        "#cantidad-galeria"
-    );
+    document.querySelector("#cantidad-galeria");
+
+const contadorGaleria =
+    document.querySelector("#contador-galeria");
 
 
-let imagenGaleriaActual =
-    null;
+let imagenGaleriaActual = null;
 
 
-
-// ==========================================
-// PREVIEW GALERÍA
-// ==========================================
-
-inputGaleria?.addEventListener(
+imagenGaleria?.addEventListener(
     "change",
     () => {
 
         const archivo =
-            inputGaleria.files[0];
-
+            imagenGaleria.files[0];
 
         if(!archivo){
-
-            if(imagenGaleriaActual){
-
-                previewGaleria.src =
-                    imagenGaleriaActual;
-
-                previewGaleria.hidden =
-                    false;
-
-            }else{
-
-                previewGaleria.hidden =
-                    true;
-
-            }
-
             return;
         }
-
 
         previewGaleria.src =
             URL.createObjectURL(archivo);
 
         previewGaleria.hidden =
             false;
-
     }
 );
 
 
-
-// ==========================================
-// CARGAR GALERÍA ADMIN
-// ==========================================
-
 async function cargarGaleriaAdmin(){
+
+    if(!listaGaleria){
+        return;
+    }
 
     try{
 
         const respuesta =
-            await fetch(
-                "/api/galeria",
-                {
-                    cache:"no-store"
-                }
-            );
+            await fetch("/api/galeria",{
+                cache:"no-store"
+            });
 
+        if(!respuesta.ok){
+            throw new Error();
+        }
 
         const imagenes =
             await respuesta.json();
 
+        if(cantidadGaleria){
+            cantidadGaleria.textContent =
+                imagenes.length;
+        }
 
-        cantidadGaleria.textContent =
-            imagenes.length;
+        if(contadorGaleria){
 
+            contadorGaleria.textContent =
+                `${imagenes.length} imagen${
+                    imagenes.length === 1
+                        ? ""
+                        : "es"
+                }`;
+        }
 
-        contadorGaleria.textContent =
-            `${imagenes.length} imagen${
-                imagenes.length === 1
-                    ? ""
-                    : "es"
-            }`;
-
-
-        listaGaleriaAdmin.innerHTML =
-            "";
-
+        listaGaleria.innerHTML = "";
 
         if(imagenes.length === 0){
 
-            listaGaleriaAdmin.innerHTML =
+            listaGaleria.innerHTML =
                 "<p>No hay imágenes todavía.</p>";
 
             return;
         }
 
-
         imagenes.forEach(imagen => {
 
             const item =
-                document.createElement("div");
+                document.createElement("article");
 
             item.className =
                 "servicio-admin-item";
@@ -910,7 +690,6 @@ async function cargarGaleriaAdmin(){
 
 
             contenido.appendChild(foto);
-
             contenido.appendChild(titulo);
 
 
@@ -924,71 +703,48 @@ async function cargarGaleriaAdmin(){
             const editar =
                 document.createElement("button");
 
-            editar.type =
-                "button";
-
-            editar.className =
-                "btn-editar";
-
-            editar.textContent =
-                "Editar";
+            editar.type = "button";
+            editar.className = "btn-editar";
+            editar.textContent = "Editar";
 
             editar.addEventListener(
                 "click",
-                () =>
-                    editarGaleria(imagen)
+                () => editarImagenGaleria(imagen)
             );
 
 
             const eliminar =
                 document.createElement("button");
 
-            eliminar.type =
-                "button";
-
-            eliminar.className =
-                "btn-eliminar";
-
-            eliminar.textContent =
-                "Eliminar";
+            eliminar.type = "button";
+            eliminar.className = "btn-eliminar";
+            eliminar.textContent = "Eliminar";
 
             eliminar.addEventListener(
                 "click",
-                () =>
-                    eliminarGaleria(imagen.id)
+                () => eliminarImagenGaleria(imagen.id)
             );
 
 
             acciones.appendChild(editar);
-
             acciones.appendChild(eliminar);
 
-
             item.appendChild(contenido);
-
             item.appendChild(acciones);
 
-
-            listaGaleriaAdmin.appendChild(
-                item
-            );
+            listaGaleria.appendChild(item);
 
         });
-
 
     }catch(error){
 
         console.error(error);
 
+        listaGaleria.innerHTML =
+            "<p>No se pudo cargar la galería.</p>";
     }
-
 }
 
-
-
-// ==========================================
-// GUARDAR GALERÍA
-// ==========================================
 
 formGaleria?.addEventListener(
     "submit",
@@ -996,26 +752,21 @@ formGaleria?.addEventListener(
 
         e.preventDefault();
 
-
         try{
 
             const id =
                 galeriaId.value;
 
-
             let rutaImagen =
                 imagenGaleriaActual;
 
-
-            if(inputGaleria.files.length){
+            if(imagenGaleria.files.length){
 
                 rutaImagen =
                     await subirImagen(
-                        inputGaleria
+                        imagenGaleria
                     );
-
             }
-
 
             if(!rutaImagen){
 
@@ -1026,7 +777,6 @@ formGaleria?.addEventListener(
                 return;
             }
 
-
             const datos = {
 
                 titulo:
@@ -1036,13 +786,10 @@ formGaleria?.addEventListener(
                     rutaImagen,
 
                 activo:true
-
             };
-
 
             const editando =
                 id !== "";
-
 
             const respuesta =
                 await fetch(
@@ -1050,7 +797,6 @@ formGaleria?.addEventListener(
                         ? `/api/galeria/${id}`
                         : "/api/galeria",
                     {
-
                         method:
                             editando
                                 ? "PUT"
@@ -1066,10 +812,16 @@ formGaleria?.addEventListener(
 
                         body:
                             JSON.stringify(datos)
-
                     }
                 );
 
+            if(respuesta.status === 401){
+
+                window.location.href =
+                    "/login.html";
+
+                return;
+            }
 
             if(!respuesta.ok){
 
@@ -1080,30 +832,21 @@ formGaleria?.addEventListener(
                 return;
             }
 
-
             limpiarGaleria();
 
             await cargarGaleriaAdmin();
-
 
         }catch(error){
 
             console.error(error);
 
             alert(error.message);
-
         }
-
     }
 );
 
 
-
-// ==========================================
-// EDITAR GALERÍA
-// ==========================================
-
-function editarGaleria(imagen){
+function editarImagenGaleria(imagen){
 
     galeriaId.value =
         imagen.id;
@@ -1114,10 +857,7 @@ function editarGaleria(imagen){
     imagenGaleriaActual =
         imagen.imagen;
 
-
-    inputGaleria.value =
-        "";
-
+    imagenGaleria.value = "";
 
     previewGaleria.src =
         imagen.imagen;
@@ -1125,41 +865,28 @@ function editarGaleria(imagen){
     previewGaleria.hidden =
         false;
 
-
     tituloFormGaleria.textContent =
         "Editar imagen";
-
 
     btnGuardarGaleria.textContent =
         "Guardar cambios";
 
-
     btnCancelarGaleria.hidden =
         false;
-
 }
 
-
-
-// ==========================================
-// LIMPIAR GALERÍA
-// ==========================================
 
 function limpiarGaleria(){
 
     formGaleria.reset();
 
-    galeriaId.value =
-        "";
+    galeriaId.value = "";
 
-    imagenGaleriaActual =
-        null;
+    imagenGaleriaActual = null;
 
-    previewGaleria.src =
-        "";
+    previewGaleria.src = "";
 
-    previewGaleria.hidden =
-        true;
+    previewGaleria.hidden = true;
 
     tituloFormGaleria.textContent =
         "Agregar imagen";
@@ -1169,7 +896,6 @@ function limpiarGaleria(){
 
     btnCancelarGaleria.hidden =
         true;
-
 }
 
 
@@ -1179,12 +905,7 @@ btnCancelarGaleria?.addEventListener(
 );
 
 
-
-// ==========================================
-// ELIMINAR GALERÍA
-// ==========================================
-
-async function eliminarGaleria(id){
+async function eliminarImagenGaleria(id){
 
     if(
         !confirm(
@@ -1194,7 +915,6 @@ async function eliminarGaleria(id){
         return;
     }
 
-
     await fetch(
         `/api/galeria/${id}`,
         {
@@ -1203,11 +923,8 @@ async function eliminarGaleria(id){
         }
     );
 
-
     await cargarGaleriaAdmin();
-
 }
-
 
 
 // ==========================================
@@ -1215,107 +932,85 @@ async function eliminarGaleria(id){
 // ==========================================
 
 const formPregunta =
-    document.querySelector(
-        "#form-pregunta"
-    );
+    document.querySelector("#form-pregunta");
 
 const preguntaId =
-    document.querySelector(
-        "#pregunta-id"
-    );
+    document.querySelector("#pregunta-id");
 
 const preguntaTexto =
-    document.querySelector(
-        "#pregunta-texto"
-    );
+    document.querySelector("#pregunta-texto");
 
 const respuestaTexto =
-    document.querySelector(
-        "#respuesta-texto"
-    );
+    document.querySelector("#respuesta-texto");
 
-const listaPreguntasAdmin =
-    document.querySelector(
-        "#lista-preguntas-admin"
-    );
+const listaPreguntas =
+    document.querySelector("#lista-preguntas-admin");
 
 const tituloFormPregunta =
-    document.querySelector(
-        "#titulo-form-pregunta"
-    );
+    document.querySelector("#titulo-form-pregunta");
 
 const btnGuardarPregunta =
-    document.querySelector(
-        "#btn-guardar-pregunta"
-    );
+    document.querySelector("#btn-guardar-pregunta");
 
 const btnCancelarPregunta =
-    document.querySelector(
-        "#btn-cancelar-pregunta"
-    );
-
-const contadorPreguntas =
-    document.querySelector(
-        "#contador-preguntas"
-    );
+    document.querySelector("#btn-cancelar-pregunta");
 
 const cantidadPreguntas =
-    document.querySelector(
-        "#cantidad-preguntas"
-    );
+    document.querySelector("#cantidad-preguntas");
 
+const contadorPreguntas =
+    document.querySelector("#contador-preguntas");
 
-
-// ==========================================
-// CARGAR PREGUNTAS
-// ==========================================
 
 async function cargarPreguntasAdmin(){
+
+    if(!listaPreguntas){
+        return;
+    }
 
     try{
 
         const respuesta =
-            await fetch(
-                "/api/preguntas",
-                {
-                    cache:"no-store"
-                }
-            );
+            await fetch("/api/preguntas",{
+                cache:"no-store"
+            });
 
+        if(!respuesta.ok){
+            throw new Error();
+        }
 
         const preguntas =
             await respuesta.json();
 
+        if(cantidadPreguntas){
+            cantidadPreguntas.textContent =
+                preguntas.length;
+        }
 
-        cantidadPreguntas.textContent =
-            preguntas.length;
+        if(contadorPreguntas){
 
+            contadorPreguntas.textContent =
+                `${preguntas.length} pregunta${
+                    preguntas.length === 1
+                        ? ""
+                        : "s"
+                }`;
+        }
 
-        contadorPreguntas.textContent =
-            `${preguntas.length} pregunta${
-                preguntas.length === 1
-                    ? ""
-                    : "s"
-            }`;
-
-
-        listaPreguntasAdmin.innerHTML =
-            "";
-
+        listaPreguntas.innerHTML = "";
 
         if(preguntas.length === 0){
 
-            listaPreguntasAdmin.innerHTML =
+            listaPreguntas.innerHTML =
                 "<p>No hay preguntas todavía.</p>";
 
             return;
         }
 
-
         preguntas.forEach(pregunta => {
 
             const item =
-                document.createElement("div");
+                document.createElement("article");
 
             item.className =
                 "servicio-admin-item";
@@ -1332,16 +1027,15 @@ async function cargarPreguntasAdmin(){
                 pregunta.pregunta;
 
 
-            const respuesta =
+            const texto =
                 document.createElement("p");
 
-            respuesta.textContent =
+            texto.textContent =
                 pregunta.respuesta;
 
 
             contenido.appendChild(titulo);
-
-            contenido.appendChild(respuesta);
+            contenido.appendChild(texto);
 
 
             const acciones =
@@ -1354,71 +1048,48 @@ async function cargarPreguntasAdmin(){
             const editar =
                 document.createElement("button");
 
-            editar.type =
-                "button";
-
-            editar.className =
-                "btn-editar";
-
-            editar.textContent =
-                "Editar";
+            editar.type = "button";
+            editar.className = "btn-editar";
+            editar.textContent = "Editar";
 
             editar.addEventListener(
                 "click",
-                () =>
-                    editarPregunta(pregunta)
+                () => editarPregunta(pregunta)
             );
 
 
             const eliminar =
                 document.createElement("button");
 
-            eliminar.type =
-                "button";
-
-            eliminar.className =
-                "btn-eliminar";
-
-            eliminar.textContent =
-                "Eliminar";
+            eliminar.type = "button";
+            eliminar.className = "btn-eliminar";
+            eliminar.textContent = "Eliminar";
 
             eliminar.addEventListener(
                 "click",
-                () =>
-                    eliminarPregunta(pregunta.id)
+                () => eliminarPregunta(pregunta.id)
             );
 
 
             acciones.appendChild(editar);
-
             acciones.appendChild(eliminar);
 
-
             item.appendChild(contenido);
-
             item.appendChild(acciones);
 
-
-            listaPreguntasAdmin.appendChild(
-                item
-            );
+            listaPreguntas.appendChild(item);
 
         });
-
 
     }catch(error){
 
         console.error(error);
 
+        listaPreguntas.innerHTML =
+            "<p>No se pudieron cargar las preguntas.</p>";
     }
-
 }
 
-
-
-// ==========================================
-// GUARDAR PREGUNTA
-// ==========================================
 
 formPregunta?.addEventListener(
     "submit",
@@ -1426,10 +1097,8 @@ formPregunta?.addEventListener(
 
         e.preventDefault();
 
-
         const id =
             preguntaId.value;
-
 
         const datos = {
 
@@ -1440,13 +1109,10 @@ formPregunta?.addEventListener(
                 respuestaTexto.value.trim(),
 
             activo:true
-
         };
-
 
         const editando =
             id !== "";
-
 
         const respuesta =
             await fetch(
@@ -1454,7 +1120,6 @@ formPregunta?.addEventListener(
                     ? `/api/preguntas/${id}`
                     : "/api/preguntas",
                 {
-
                     method:
                         editando
                             ? "PUT"
@@ -1470,10 +1135,16 @@ formPregunta?.addEventListener(
 
                     body:
                         JSON.stringify(datos)
-
                 }
             );
 
+        if(respuesta.status === 401){
+
+            window.location.href =
+                "/login.html";
+
+            return;
+        }
 
         if(!respuesta.ok){
 
@@ -1484,19 +1155,12 @@ formPregunta?.addEventListener(
             return;
         }
 
-
         limpiarPregunta();
 
         await cargarPreguntasAdmin();
-
     }
 );
 
-
-
-// ==========================================
-// EDITAR PREGUNTA
-// ==========================================
 
 function editarPregunta(pregunta){
 
@@ -1509,32 +1173,22 @@ function editarPregunta(pregunta){
     respuestaTexto.value =
         pregunta.respuesta;
 
-
     tituloFormPregunta.textContent =
         "Editar pregunta";
-
 
     btnGuardarPregunta.textContent =
         "Guardar cambios";
 
-
     btnCancelarPregunta.hidden =
         false;
-
 }
 
-
-
-// ==========================================
-// LIMPIAR PREGUNTA
-// ==========================================
 
 function limpiarPregunta(){
 
     formPregunta.reset();
 
-    preguntaId.value =
-        "";
+    preguntaId.value = "";
 
     tituloFormPregunta.textContent =
         "Agregar pregunta";
@@ -1544,7 +1198,6 @@ function limpiarPregunta(){
 
     btnCancelarPregunta.hidden =
         true;
-
 }
 
 
@@ -1553,11 +1206,6 @@ btnCancelarPregunta?.addEventListener(
     limpiarPregunta
 );
 
-
-
-// ==========================================
-// ELIMINAR PREGUNTA
-// ==========================================
 
 async function eliminarPregunta(id){
 
@@ -1569,7 +1217,6 @@ async function eliminarPregunta(id){
         return;
     }
 
-
     await fetch(
         `/api/preguntas/${id}`,
         {
@@ -1578,11 +1225,8 @@ async function eliminarPregunta(id){
         }
     );
 
-
     await cargarPreguntasAdmin();
-
 }
-
 
 
 // ==========================================
@@ -1603,21 +1247,16 @@ document
                 }
             );
 
-
             window.location.href =
                 "/login.html";
-
         }
     );
 
 
-
 // ==========================================
-// INICIO
+// INICIAR PANEL
 // ==========================================
 
 cargarServicios();
-
 cargarGaleriaAdmin();
-
 cargarPreguntasAdmin();
