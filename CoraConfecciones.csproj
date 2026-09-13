@@ -1,18 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>5e99d0a6-d135-4dc3-9d33-4634c4203f9c</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+
+    <PackageReference
+      Include="Microsoft.EntityFrameworkCore.Design"
+      Version="9.0.20">
+
+      <IncludeAssets>
+        runtime; build; native; contentfiles; analyzers; buildtransitive
+      </IncludeAssets>
+
       <PrivateAssets>all</PrivateAssets>
+
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
+
+    <PackageReference
+      Include="Microsoft.EntityFrameworkCore.Sqlite"
+      Version="9.0.20" />
+
   </ItemGroup>
 
 </Project>
