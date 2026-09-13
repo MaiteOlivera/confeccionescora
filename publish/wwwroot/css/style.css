@@ -361,7 +361,6 @@ body{
 
 .contacto{
     padding:55px 50px;
-
     background:linear-gradient(
         135deg,
         #FFF9F4 0%,
@@ -396,27 +395,19 @@ body{
 .campo textarea{
     width:100%;
     padding:14px 16px;
-
     border:1px solid rgba(120,150,179,.4);
     border-radius:8px;
-
     background:rgba(255,255,255,.85);
-
     font:inherit;
     color:var(--texto);
-
     outline:none;
-
     transition:.3s;
 }
 
 .campo input:focus,
 .campo textarea:focus{
     border-color:var(--azul);
-
-    box-shadow:
-        0 0 0 3px
-        rgba(120,150,179,.12);
+    box-shadow:0 0 0 3px rgba(120,150,179,.12);
 }
 
 .campo textarea{
@@ -424,82 +415,28 @@ body{
     resize:vertical;
 }
 
-
-/* =========================
-   BOTONES CONTACTO
-========================= */
-
-.contacto button,
-.contacto .btn-instagram{
-
+.contacto button{
     width:190px;
-
     padding:14px 25px;
-
     border:none;
     border-radius:30px;
-
     background:linear-gradient(
         90deg,
         var(--rosa),
         #F0B4B5
     );
-
     color:var(--azul-oscuro);
-
     font-size:16px;
-    font-family:inherit;
-
     display:flex;
     align-items:center;
     justify-content:space-between;
-
     cursor:pointer;
-
-    text-decoration:none;
-
-    transition:
-        transform .3s ease,
-        box-shadow .3s ease,
-        background .3s ease;
+    transition:.3s;
 }
 
-
-/* ESPACIO ENTRE WHATSAPP E INSTAGRAM */
-
-.contacto .btn-instagram{
-    margin-top:15px;
-}
-
-
-/* HOVER */
-
-.contacto button:hover,
-.contacto .btn-instagram:hover{
-
-    transform:
-        translateY(-5px)
-        scale(1.02);
-
-    box-shadow:
-        0 12px 25px
-        rgba(63,95,127,.20);
-}
-
-
-/* FLECHA */
-
-.contacto button span,
-.contacto .btn-instagram span{
-    transition:transform .3s ease;
-}
-
-
-/* ANIMACIÓN DE LA FLECHA */
-
-.contacto button:hover span,
-.contacto .btn-instagram:hover span{
-    transform:translateX(6px);
+.contacto button:hover{
+    transform:translateY(-3px);
+    box-shadow:0 8px 20px rgba(70,102,132,.15);
 }
 
 /* =========================
