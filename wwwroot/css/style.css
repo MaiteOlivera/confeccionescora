@@ -841,21 +841,100 @@ body{
     }
 }
 
-/* =========================
-   ANIMACIÓN AL HACER SCROLL
-========================= */
+/* =========================================
+   ANIMACIONES DE SCROLL
+========================================= */
 
 .animar-scroll{
     opacity:0;
-    transform:translateY(40px);
+    transform:translateY(45px);
+
     transition:
-        opacity .8s ease,
-        transform .8s ease;
+        opacity .75s ease,
+        transform .75s cubic-bezier(.2,.7,.2,1);
+
+    will-change:opacity,transform;
+
+    /*
+       Evita que las animaciones viejas
+       interfieran con IntersectionObserver.
+    */
+    animation:none !important;
 }
+
+
+/* CUANDO ENTRA EN PANTALLA */
 
 .animar-scroll.mostrar{
     opacity:1;
     transform:translateY(0);
+}
+
+
+/* IZQUIERDA */
+
+.animar-scroll.desde-izquierda{
+    transform:translateX(-45px);
+}
+
+.animar-scroll.desde-izquierda.mostrar{
+    transform:translateX(0);
+}
+
+
+/* DERECHA */
+
+.animar-scroll.desde-derecha{
+    transform:translateX(45px);
+}
+
+.animar-scroll.desde-derecha.mostrar{
+    transform:translateX(0);
+}
+
+
+/* ESCALA */
+
+.animar-scroll.zoom{
+    transform:scale(.92);
+}
+
+.animar-scroll.zoom.mostrar{
+    transform:scale(1);
+}
+
+
+/* DIFERENTES DEMORAS */
+
+.delay-1{
+    transition-delay:.08s;
+}
+
+.delay-2{
+    transition-delay:.16s;
+}
+
+.delay-3{
+    transition-delay:.24s;
+}
+
+.delay-4{
+    transition-delay:.32s;
+}
+
+
+/* =========================================
+   ACCESIBILIDAD
+========================================= */
+
+@media(prefers-reduced-motion:reduce){
+
+    .animar-scroll{
+        opacity:1 !important;
+        transform:none !important;
+        transition:none !important;
+    }
+
 }
 
 /* =========================
@@ -1009,4 +1088,265 @@ body{
     .imagenes-galeria img{
         height:280px;
     }
+}
+
+/* ========================================
+   ANIMACIONES SCROLL
+======================================== */
+
+.animar-scroll{
+    opacity:0;
+
+    transform:
+        translateY(45px);
+
+    transition:
+        opacity .8s ease,
+        transform .8s cubic-bezier(.2,.7,.2,1);
+
+    will-change:
+        opacity,
+        transform;
+}
+
+
+/* ELEMENTO VISIBLE */
+
+.animar-scroll.mostrar{
+    opacity:1;
+
+    transform:
+        translateY(0);
+}
+
+
+/* DESDE LA IZQUIERDA */
+
+.animar-scroll.desde-izquierda{
+    transform:
+        translateX(-55px);
+}
+
+.animar-scroll.desde-izquierda.mostrar{
+    transform:
+        translateX(0);
+}
+
+
+/* DESDE LA DERECHA */
+
+.animar-scroll.desde-derecha{
+    transform:
+        translateX(55px);
+}
+
+.animar-scroll.desde-derecha.mostrar{
+    transform:
+        translateX(0);
+}
+
+
+/* EFECTO ZOOM */
+
+.animar-scroll.zoom{
+    transform:
+        translateY(25px)
+        scale(.92);
+}
+
+.animar-scroll.zoom.mostrar{
+    transform:
+        translateY(0)
+        scale(1);
+}
+
+
+/* ACCESIBILIDAD */
+
+@media(prefers-reduced-motion:reduce){
+
+    .animar-scroll{
+        opacity:1 !important;
+
+        transform:none !important;
+
+        transition:none !important;
+    }
+
+}
+
+/* ========================================
+   SOBRE CORA
+======================================== */
+
+.sobre-cora{
+    padding:55px 45px;
+}
+
+.sobre-cora-imagen{
+    width:100%;
+    margin:30px 0 32px;
+    overflow:hidden;
+    border-radius:20px;
+}
+
+.sobre-cora-imagen img{
+    width:100%;
+    height:380px;
+    display:block;
+    object-fit:cover;
+    object-position:center;
+    transition:
+        transform .8s ease;
+}
+
+.sobre-cora-imagen:hover img{
+    transform:scale(1.03);
+}
+
+
+/* TEXTO */
+
+.sobre-cora > p{
+    margin-bottom:20px;
+
+    font-size:16px;
+    line-height:1.8;
+
+    color:var(--texto);
+}
+
+
+/* PRIMER TEXTO */
+
+.sobre-cora .presentacion-cora{
+    font-size:18px;
+    line-height:1.7;
+
+    color:var(--azul-oscuro);
+}
+
+
+/* TEXTO IMPORTANTE */
+
+.sobre-cora .texto-destacado{
+    margin:30px 0;
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size:25px;
+    font-style:italic;
+
+    color:var(--azul-oscuro);
+}
+
+
+/* FRASE CENTRAL */
+
+.sobre-cora .frase-cora{
+    margin:35px 0;
+
+    padding:24px;
+
+    border-left:3px solid var(--rosa);
+
+    background:var(--rosa-claro);
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size:22px;
+    font-style:italic;
+
+    line-height:1.5;
+
+    color:var(--azul-oscuro);
+}
+
+
+/* FRASE FINAL */
+
+.sobre-cora .descripcion-frase{
+    margin-top:40px;
+
+    padding-top:25px;
+
+    border-top:
+        1px solid rgba(97,127,163,.25);
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size:19px;
+
+    text-align:center;
+
+    color:var(--azul-oscuro);
+}
+
+
+/* NEGRITAS */
+
+.sobre-cora strong{
+    color:var(--azul-oscuro);
+}
+
+
+/* ========================================
+   CELULAR
+======================================== */
+
+@media(max-width:800px){
+
+    .sobre-cora{
+        padding:40px 25px;
+    }
+
+    .sobre-cora-imagen img{
+        height:420px;
+    }
+
+}
+
+
+@media(max-width:500px){
+
+    .sobre-cora{
+        padding:35px 20px;
+    }
+
+    .sobre-cora-imagen{
+        margin:
+            25px 0;
+    }
+
+    .sobre-cora-imagen img{
+        height:350px;
+    }
+
+    .sobre-cora > p{
+        font-size:15px;
+        line-height:1.75;
+    }
+
+    .sobre-cora .presentacion-cora{
+        font-size:17px;
+    }
+
+    .sobre-cora .texto-destacado{
+        font-size:22px;
+    }
+
+    .sobre-cora .frase-cora{
+        padding:20px;
+        font-size:19px;
+    }
+
 }

@@ -516,6 +516,235 @@ app.MapPost(
 )
 .RequireAuthorization();
 
+// ============================================
+// PREGUNTAS FRECUENTES
+// ============================================
+
+// LISTAR
+app.MapGet(
+    "/api/preguntas",
+    async (AppDbContext db) =>
+    {
+        var preguntas =
+            await db.PreguntasFrecuentes
+                .Where(p => p.Activo)
+                .OrderBy(p => p.Id)
+                .ToListAsync();
+
+        return Results.Ok(preguntas);
+    }
+);
+
+
+// AGREGAR
+app.MapPost(
+    "/api/preguntas",
+    async (
+        PreguntaFrecuente pregunta,
+        AppDbContext db
+    ) =>
+    {
+        if(
+            string.IsNullOrWhiteSpace(pregunta.Pregunta) ||
+            string.IsNullOrWhiteSpace(pregunta.Respuesta)
+        )
+        {
+            return Results.BadRequest(
+                new
+                {
+                    mensaje =
+                        "Pregunta y respuesta son obligatorias."
+                }
+            );
+        }
+
+        pregunta.Activo = true;
+
+        db.PreguntasFrecuentes.Add(pregunta);
+
+        await db.SaveChangesAsync();
+
+        return Results.Created(
+            $"/api/preguntas/{pregunta.Id}",
+            pregunta
+        );
+    }
+)
+.RequireAuthorization();
+
+
+// EDITAR
+app.MapPut(
+    "/api/preguntas/{id}",
+    async (
+        int id,
+        PreguntaFrecuente actualizado,
+        AppDbContext db
+    ) =>
+    {
+        var pregunta =
+            await db.PreguntasFrecuentes.FindAsync(id);
+
+        if(pregunta == null)
+        {
+            return Results.NotFound();
+        }
+
+        pregunta.Pregunta =
+            actualizado.Pregunta;
+
+        pregunta.Respuesta =
+            actualizado.Respuesta;
+
+        pregunta.Activo =
+            actualizado.Activo;
+
+        await db.SaveChangesAsync();
+
+        return Results.Ok(pregunta);
+    }
+)
+.RequireAuthorization();
+
+
+// ELIMINAR
+app.MapDelete(
+    "/api/preguntas/{id}",
+    async (
+        int id,
+        AppDbContext db
+    ) =>
+    {
+        var pregunta =
+            await db.PreguntasFrecuentes.FindAsync(id);
+
+        if(pregunta == null)
+        {
+            return Results.NotFound();
+        }
+
+        db.PreguntasFrecuentes.Remove(pregunta);
+
+        await db.SaveChangesAsync();
+
+        return Results.Ok();
+    }
+)
+.RequireAuthorization();
+
+
+// ============================================
+// GALERÍA
+// ============================================
+
+// LISTAR
+app.MapGet(
+    "/api/galeria",
+    async (AppDbContext db) =>
+    {
+        var imagenes =
+            await db.ImagenesGaleria
+                .Where(i => i.Activo)
+                .OrderByDescending(i => i.Id)
+                .ToListAsync();
+
+        return Results.Ok(imagenes);
+    }
+);
+
+
+// AGREGAR
+app.MapPost(
+    "/api/galeria",
+    async (
+        ImagenGaleria imagen,
+        AppDbContext db
+    ) =>
+    {
+        if(string.IsNullOrWhiteSpace(imagen.Imagen))
+        {
+            return Results.BadRequest(
+                new
+                {
+                    mensaje =
+                        "La imagen es obligatoria."
+                }
+            );
+        }
+
+        imagen.Activo = true;
+
+        db.ImagenesGaleria.Add(imagen);
+
+        await db.SaveChangesAsync();
+
+        return Results.Created(
+            $"/api/galeria/{imagen.Id}",
+            imagen
+        );
+    }
+)
+.RequireAuthorization();
+
+
+// EDITAR
+app.MapPut(
+    "/api/galeria/{id}",
+    async (
+        int id,
+        ImagenGaleria actualizado,
+        AppDbContext db
+    ) =>
+    {
+        var imagen =
+            await db.ImagenesGaleria.FindAsync(id);
+
+        if(imagen == null)
+        {
+            return Results.NotFound();
+        }
+
+        imagen.Titulo =
+            actualizado.Titulo;
+
+        imagen.Imagen =
+            actualizado.Imagen;
+
+        imagen.Activo =
+            actualizado.Activo;
+
+        await db.SaveChangesAsync();
+
+        return Results.Ok(imagen);
+    }
+)
+.RequireAuthorization();
+
+
+// ELIMINAR
+app.MapDelete(
+    "/api/galeria/{id}",
+    async (
+        int id,
+        AppDbContext db
+    ) =>
+    {
+        var imagen =
+            await db.ImagenesGaleria.FindAsync(id);
+
+        if(imagen == null)
+        {
+            return Results.NotFound();
+        }
+
+        db.ImagenesGaleria.Remove(imagen);
+
+        await db.SaveChangesAsync();
+
+        return Results.Ok();
+    }
+)
+.RequireAuthorization();
 
 app.Run();
 

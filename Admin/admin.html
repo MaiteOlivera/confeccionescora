@@ -24,7 +24,6 @@
 
 <body class="body-admin">
 
-
 <div class="admin-layout">
 
 
@@ -33,7 +32,6 @@
     =========================================== -->
 
     <aside class="admin-sidebar">
-
 
         <div class="admin-logo">
 
@@ -47,7 +45,6 @@
 
         <nav class="admin-nav">
 
-
             <button
                 type="button"
                 class="admin-link activo"
@@ -55,7 +52,6 @@
             >
                 Inicio
             </button>
-
 
             <button
                 type="button"
@@ -65,7 +61,6 @@
                 Servicios
             </button>
 
-
             <button
                 type="button"
                 class="admin-link"
@@ -73,7 +68,6 @@
             >
                 Galería
             </button>
-
 
             <button
                 type="button"
@@ -83,12 +77,10 @@
                 Preguntas
             </button>
 
-
         </nav>
 
 
         <div class="sidebar-final">
-
 
             <a
                 href="/"
@@ -97,7 +89,6 @@
                 Ver página
             </a>
 
-
             <button
                 type="button"
                 id="btn-logout"
@@ -105,9 +96,7 @@
                 Cerrar sesión
             </button>
 
-
         </div>
-
 
     </aside>
 
@@ -120,10 +109,7 @@
     <main class="admin-contenido">
 
 
-        <!-- HEADER -->
-
         <header class="admin-header">
-
 
             <div>
 
@@ -137,11 +123,9 @@
 
             </div>
 
-
             <div class="admin-estado">
                 ● Administrador
             </div>
-
 
         </header>
 
@@ -156,20 +140,17 @@
             class="admin-seccion activa"
         >
 
-
             <h2>
                 Bienvenida
             </h2>
 
-
             <p class="texto-secundario">
-                Desde acá podés administrar el
-                contenido de Cora Confecciones.
+                Desde acá podés administrar el contenido
+                de Cora Confecciones.
             </p>
 
 
             <div class="resumen-grid">
-
 
                 <article class="resumen-card">
 
@@ -194,12 +175,12 @@
                         Galería
                     </span>
 
-                    <strong>
-                        —
+                    <strong id="cantidad-galeria">
+                        0
                     </strong>
 
                     <p>
-                        Próximamente
+                        Imágenes publicadas
                     </p>
 
                 </article>
@@ -211,19 +192,17 @@
                         Preguntas
                     </span>
 
-                    <strong>
-                        —
+                    <strong id="cantidad-preguntas">
+                        0
                     </strong>
 
                     <p>
-                        Próximamente
+                        Preguntas publicadas
                     </p>
 
                 </article>
 
-
             </div>
-
 
         </section>
 
@@ -238,34 +217,21 @@
             class="admin-seccion"
         >
 
+            <p class="mini-titulo">
+                CONTENIDO
+            </p>
 
-            <div class="seccion-titulo">
-
-                <div>
-
-                    <p class="mini-titulo">
-                        CONTENIDO
-                    </p>
-
-                    <h2>
-                        Servicios
-                    </h2>
-
-                </div>
-
-            </div>
-
+            <h2>
+                Servicios
+            </h2>
 
 
             <div class="servicios-admin-grid">
 
 
-                <!-- ==================================
-                     FORMULARIO
-                =================================== -->
+                <!-- FORMULARIO -->
 
                 <div class="admin-card formulario-servicio">
-
 
                     <h3 id="titulo-formulario">
                         Agregar servicio
@@ -274,17 +240,11 @@
 
                     <form id="form-servicio">
 
-
-                        <!-- ID OCULTO -->
-
                         <input
                             type="hidden"
                             id="servicio-id"
                         >
 
-
-
-                        <!-- NOMBRE -->
 
                         <div class="campo-admin">
 
@@ -302,9 +262,6 @@
                         </div>
 
 
-
-                        <!-- DESCRIPCIÓN -->
-
                         <div class="campo-admin">
 
                             <label for="descripcion-servicio">
@@ -319,9 +276,6 @@
 
                         </div>
 
-
-
-                        <!-- PRECIO -->
 
                         <div class="campo-admin">
 
@@ -340,16 +294,11 @@
                         </div>
 
 
-
-                        <!-- IMAGEN -->
-
                         <div class="campo-admin">
 
-
                             <label for="imagen-servicio">
-                                Imagen del servicio
+                                Imagen
                             </label>
-
 
                             <input
                                 type="file"
@@ -357,29 +306,21 @@
                                 accept="image/jpeg,image/png,image/webp"
                             >
 
-
                             <p class="ayuda-imagen">
-                                Seleccioná una imagen desde tu computadora
-                                o desde la galería del celular.
+                                JPG, PNG o WEBP. Máximo 5 MB.
                             </p>
-
 
                             <img
                                 id="preview-imagen"
                                 class="preview-imagen"
-                                alt="Vista previa de la imagen"
+                                alt="Vista previa"
                                 hidden
                             >
-
 
                         </div>
 
 
-
-                        <!-- BOTONES -->
-
                         <div class="botones-form">
-
 
                             <button
                                 type="submit"
@@ -388,7 +329,6 @@
                             >
                                 Agregar servicio
                             </button>
-
 
                             <button
                                 type="button"
@@ -399,39 +339,29 @@
                                 Cancelar
                             </button>
 
-
                         </div>
 
-
                     </form>
-
 
                 </div>
 
 
 
-                <!-- ==================================
-                     SERVICIOS ACTUALES
-                =================================== -->
+                <!-- LISTA -->
 
                 <div class="admin-card">
 
-
                     <div class="lista-header">
-
 
                         <h3>
                             Servicios actuales
                         </h3>
 
-
                         <span id="contador-servicios">
                             0 servicios
                         </span>
 
-
                     </div>
-
 
                     <div id="lista-servicios-admin">
 
@@ -441,12 +371,9 @@
 
                     </div>
 
-
                 </div>
 
-
             </div>
-
 
         </section>
 
@@ -461,28 +388,130 @@
             class="admin-seccion"
         >
 
+            <p class="mini-titulo">
+                CONTENIDO
+            </p>
 
             <h2>
                 Galería
             </h2>
 
 
-            <div class="admin-card proximamente">
+            <div class="servicios-admin-grid">
 
 
-                <h3>
-                    Administración de imágenes
-                </h3>
+                <!-- FORMULARIO GALERÍA -->
+
+                <div class="admin-card">
+
+                    <h3 id="titulo-form-galeria">
+                        Agregar imagen
+                    </h3>
 
 
-                <p>
-                    Próximamente vas a poder agregar
-                    y eliminar imágenes desde esta sección.
-                </p>
+                    <form id="form-galeria">
 
+                        <input
+                            type="hidden"
+                            id="galeria-id"
+                        >
+
+
+                        <div class="campo-admin">
+
+                            <label for="titulo-galeria">
+                                Título
+                            </label>
+
+                            <input
+                                type="text"
+                                id="titulo-galeria"
+                                placeholder="Ej: Vestido personalizado"
+                            >
+
+                        </div>
+
+
+                        <div class="campo-admin">
+
+                            <label for="imagen-galeria">
+                                Imagen
+                            </label>
+
+                            <input
+                                type="file"
+                                id="imagen-galeria"
+                                accept="image/jpeg,image/png,image/webp"
+                            >
+
+                            <p class="ayuda-imagen">
+                                Podés seleccionarla desde la galería del celular.
+                            </p>
+
+                            <img
+                                id="preview-galeria"
+                                class="preview-imagen"
+                                alt="Vista previa"
+                                hidden
+                            >
+
+                        </div>
+
+
+                        <div class="botones-form">
+
+                            <button
+                                type="submit"
+                                class="btn-principal"
+                                id="btn-guardar-galeria"
+                            >
+                                Agregar imagen
+                            </button>
+
+                            <button
+                                type="button"
+                                class="btn-secundario"
+                                id="btn-cancelar-galeria"
+                                hidden
+                            >
+                                Cancelar
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+
+
+                <!-- LISTA GALERÍA -->
+
+                <div class="admin-card">
+
+                    <div class="lista-header">
+
+                        <h3>
+                            Imágenes actuales
+                        </h3>
+
+                        <span id="contador-galeria">
+                            0 imágenes
+                        </span>
+
+                    </div>
+
+                    <div id="lista-galeria-admin">
+
+                        <p class="cargando">
+                            Cargando galería...
+                        </p>
+
+                    </div>
+
+                </div>
 
             </div>
-
 
         </section>
 
@@ -497,41 +526,130 @@
             class="admin-seccion"
         >
 
+            <p class="mini-titulo">
+                CONTENIDO
+            </p>
 
             <h2>
                 Preguntas frecuentes
             </h2>
 
 
-            <div class="admin-card proximamente">
+            <div class="servicios-admin-grid">
 
 
-                <h3>
-                    Administración de preguntas
-                </h3>
+                <!-- FORMULARIO -->
+
+                <div class="admin-card">
+
+                    <h3 id="titulo-form-pregunta">
+                        Agregar pregunta
+                    </h3>
 
 
-                <p>
-                    Acá vas a poder agregar,
-                    editar y eliminar las preguntas frecuentes.
-                </p>
+                    <form id="form-pregunta">
 
+                        <input
+                            type="hidden"
+                            id="pregunta-id"
+                        >
+
+
+                        <div class="campo-admin">
+
+                            <label for="pregunta-texto">
+                                Pregunta
+                            </label>
+
+                            <input
+                                type="text"
+                                id="pregunta-texto"
+                                placeholder="Ej: ¿Realizan prendas a medida?"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="campo-admin">
+
+                            <label for="respuesta-texto">
+                                Respuesta
+                            </label>
+
+                            <textarea
+                                id="respuesta-texto"
+                                placeholder="Escribí la respuesta..."
+                                required
+                            ></textarea>
+
+                        </div>
+
+
+                        <div class="botones-form">
+
+                            <button
+                                type="submit"
+                                class="btn-principal"
+                                id="btn-guardar-pregunta"
+                            >
+                                Agregar pregunta
+                            </button>
+
+                            <button
+                                type="button"
+                                class="btn-secundario"
+                                id="btn-cancelar-pregunta"
+                                hidden
+                            >
+                                Cancelar
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+
+
+                <!-- LISTA -->
+
+                <div class="admin-card">
+
+                    <div class="lista-header">
+
+                        <h3>
+                            Preguntas actuales
+                        </h3>
+
+                        <span id="contador-preguntas">
+                            0 preguntas
+                        </span>
+
+                    </div>
+
+                    <div id="lista-preguntas-admin">
+
+                        <p class="cargando">
+                            Cargando preguntas...
+                        </p>
+
+                    </div>
+
+                </div>
 
             </div>
-
 
         </section>
 
 
     </main>
 
-
 </div>
 
 
 <script src="/js/admin.js"></script>
 
-
 </body>
-
 </html>

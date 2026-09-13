@@ -118,12 +118,15 @@ window.addEventListener("scroll", () => {
 
 
 // ============================================
-// ANIMACIONES AL APARECER EN PANTALLA
+// ANIMACIONES AL HACER SCROLL
 // ============================================
 
-const elementosAnimados = document.querySelectorAll(".animar");
 
-const observer = new IntersectionObserver(
+// ============================================
+// OBSERVADOR
+// ============================================
+
+const observerScroll = new IntersectionObserver(
 
     entradas => {
 
@@ -131,7 +134,13 @@ const observer = new IntersectionObserver(
 
             if (entrada.isIntersecting) {
 
-                entrada.target.classList.add("visible");
+                // Aparece
+                entrada.target.classList.add("mostrar");
+
+            } else {
+
+                // Desaparece cuando sale de pantalla
+                entrada.target.classList.remove("mostrar");
 
             }
 
@@ -140,18 +149,345 @@ const observer = new IntersectionObserver(
     },
 
     {
-        threshold: 0.2
+        threshold: 0.12,
+
+        rootMargin:
+            "0px 0px -5% 0px"
     }
 
 );
 
-elementosAnimados.forEach(elemento => {
 
-    observer.observe(elemento);
+// ============================================
+// PREPARAR ELEMENTO
+// ============================================
 
-});
+function prepararAnimacion(
+    elemento,
+    tipo = "",
+    delay = 0
+) {
+
+    if (!elemento) return;
 
 
+    // Evita agregar la animación más de una vez
+    if (
+        elemento.dataset.animacionPreparada === "true"
+    ) {
+        return;
+    }
+
+
+    elemento.dataset.animacionPreparada =
+        "true";
+
+
+    elemento.classList.add(
+        "animar-scroll"
+    );
+
+
+    if (tipo) {
+
+        elemento.classList.add(tipo);
+
+    }
+
+
+    if (delay > 0) {
+
+        elemento.style.transitionDelay =
+            `${delay}ms`;
+
+    }
+
+
+    observerScroll.observe(elemento);
+
+}
+
+
+// ============================================
+// ANIMAR GRUPO
+// ============================================
+
+function animarGrupo(
+    selector,
+    tipo = "",
+    separacion = 80
+) {
+
+    const elementos =
+        document.querySelectorAll(selector);
+
+
+    elementos.forEach((elemento, index) => {
+
+        prepararAnimacion(
+            elemento,
+            tipo,
+            Math.min(index * separacion, 320)
+        );
+
+    });
+
+}
+
+
+// ============================================
+// PREPARAR TODA LA PÁGINA
+// ============================================
+
+function prepararAnimacionesPagina() {
+
+
+    // ========================================
+    // DESCRIPCIÓN IZQUIERDA
+    // ========================================
+
+    animarGrupo(
+        ".descripcion-lateral > *",
+        "desde-izquierda",
+        90
+    );
+
+
+    // ========================================
+    // HERO
+    // ========================================
+
+    animarGrupo(
+        ".hero-texto > *",
+        "",
+        100
+    );
+
+
+    document
+        .querySelectorAll(".hero-imagen")
+        .forEach(elemento => {
+
+            prepararAnimacion(
+                elemento,
+                "desde-derecha"
+            );
+
+        });
+
+
+    // ========================================
+    // TÍTULOS DE SECCIONES
+    // ========================================
+
+    animarGrupo(
+        "section h2",
+        "",
+        0
+    );
+
+
+    animarGrupo(
+        "section .mini-titulo",
+        "",
+        0
+    );
+
+
+    animarGrupo(
+        "section .linea",
+        "",
+        0
+    );
+
+
+    // ========================================
+    // PÁRRAFOS
+    // ========================================
+
+    animarGrupo(
+        "section > p",
+        "",
+        60
+    );
+
+
+    // ========================================
+    // SERVICIOS
+    // ========================================
+
+    animarGrupo(
+        ".servicios-encabezado > *",
+        "",
+        80
+    );
+
+
+    animarGrupo(
+        ".servicio-card",
+        "zoom",
+        100
+    );
+
+
+    // ========================================
+    // GALERÍA
+    // ========================================
+
+    animarGrupo(
+        ".galeria img",
+        "zoom",
+        80
+    );
+
+
+    animarGrupo(
+        ".imagenes-galeria img",
+        "zoom",
+        80
+    );
+
+
+    // ========================================
+    // PREGUNTAS
+    // ========================================
+
+    animarGrupo(
+        ".preguntas details",
+        "",
+        90
+    );
+
+
+    // ========================================
+    // CONTACTO
+    // ========================================
+
+    animarGrupo(
+        ".contacto .campo",
+        "",
+        80
+    );
+
+
+    animarGrupo(
+        ".contacto-formulario > *",
+        "",
+        70
+    );
+
+
+    // ========================================
+    // BOTONES
+    // ========================================
+
+    animarGrupo(
+        "section .btn-principal",
+        "zoom",
+        0
+    );
+
+
+    animarGrupo(
+        "section .boton",
+        "zoom",
+        0
+    );
+
+
+    // ========================================
+    // IMÁGENES GENERALES
+    // ========================================
+
+    animarGrupo(
+        "main section img",
+        "zoom",
+        60
+    );
+
+
+    // ========================================
+    // TARJETAS GENERALES
+    // ========================================
+
+    animarGrupo(
+        ".card",
+        "zoom",
+        90
+    );
+
+
+    animarGrupo(
+        ".tarjeta",
+        "zoom",
+        90
+    );
+
+
+    // ========================================
+    // FOOTER
+    // ========================================
+
+    animarGrupo(
+        "footer > *",
+        "",
+        80
+    );
+
+}
+
+
+// ============================================
+// CUANDO CARGA LA WEB
+// ============================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        prepararAnimacionesPagina();
+
+    }
+);
+
+
+// ============================================
+// ELEMENTOS CREADOS DINÁMICAMENTE
+// ============================================
+
+const listaServicios =
+    document.querySelector("#lista-servicios");
+
+
+if (listaServicios) {
+
+    const observadorDOM =
+        new MutationObserver(() => {
+
+            document
+                .querySelectorAll(".servicio-card")
+                .forEach((elemento, index) => {
+
+                    prepararAnimacion(
+                        elemento,
+                        "zoom",
+                        Math.min(index * 100, 300)
+                    );
+
+                });
+
+        });
+
+
+    observadorDOM.observe(
+        listaServicios,
+        {
+            childList: true,
+            subtree: true
+        }
+    );
+
+}
 
 // ============================================
 // BOTONES DE WHATSAPP
@@ -218,45 +554,94 @@ if (botonArriba) {
 
 
 // ============================================
-// FORMULARIO DE CONTACTO
+// FORMULARIO DE CONTACTO → WHATSAPP
 // ============================================
 
-const formulario = document.querySelector("#form-contacto");
+const formulario =
+    document.querySelector("#form-contacto");
 
 if (formulario) {
 
-    formulario.addEventListener("submit", function (e) {
+    formulario.addEventListener(
+        "submit",
+        function (e) {
 
-        e.preventDefault();
+            e.preventDefault();
 
-        const nombre =
-            document.querySelector("#nombre")?.value.trim();
 
-        const telefono =
-            document.querySelector("#telefono")?.value.trim();
+            // DATOS DEL FORMULARIO
 
-        const consulta =
-            document.querySelector("#consulta")?.value.trim();
+            const nombre =
+                document
+                    .querySelector("#nombre")
+                    ?.value.trim();
 
-        if (!nombre || !telefono || !consulta) {
+            const telefono =
+                document
+                    .querySelector("#telefono")
+                    ?.value.trim();
 
-            alert("Por favor completá todos los campos.");
+            const consulta =
+                document
+                    .querySelector("#consulta")
+                    ?.value.trim();
 
-            return;
+
+            // VALIDACIÓN
+
+            if (
+                !nombre ||
+                !telefono ||
+                !consulta
+            ) {
+
+                alert(
+                    "Por favor completá todos los campos."
+                );
+
+                return;
+            }
+
+
+            // WHATSAPP DE CORA
+
+            const whatsappCora =
+                "59898547096";
+
+
+            // MENSAJE QUE RECIBE CORA
+
+            const mensaje = `
+Hola, Cora Confecciones 👋
+
+Quisiera realizar una consulta.
+
+Nombre: ${nombre}
+
+Teléfono / WhatsApp: ${telefono}
+
+Consulta:
+${consulta}
+            `.trim();
+
+
+            // CREAR ENLACE
+
+            const urlWhatsapp =
+                `https://wa.me/${whatsappCora}?text=${encodeURIComponent(mensaje)}`;
+
+
+            // ABRIR WHATSAPP
+
+            window.open(
+                urlWhatsapp,
+                "_blank"
+            );
 
         }
-
-        alert(
-            "Gracias " +
-            nombre +
-            ". Tu consulta fue preparada correctamente."
-        );
-
-    });
+    );
 
 }
-
-
 
 // ============================================
 // CERRAR MENÚ AL HACER CLICK FUERA
