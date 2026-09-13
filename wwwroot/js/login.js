@@ -33,7 +33,25 @@ formulario.addEventListener("submit", async (e) => {
 
             });
 
-        if (!respuesta.ok) {
+
+        // ============================================
+        // DEMASIADOS INTENTOS
+        // ============================================
+
+        if (respuesta.status === 429) {
+
+            mensaje.textContent =
+                "Demasiados intentos. Esperá 5 minutos antes de volver a intentar.";
+
+            return;
+        }
+
+
+        // ============================================
+        // USUARIO O CONTRASEÑA INCORRECTOS
+        // ============================================
+
+        if (respuesta.status === 401) {
 
             mensaje.textContent =
                 "Usuario o contraseña incorrectos.";
@@ -41,7 +59,26 @@ formulario.addEventListener("submit", async (e) => {
             return;
         }
 
+
+        // ============================================
+        // OTRO ERROR DEL SERVIDOR
+        // ============================================
+
+        if (!respuesta.ok) {
+
+            mensaje.textContent =
+                "Ocurrió un error. Intentá nuevamente.";
+
+            return;
+        }
+
+
+        // ============================================
+        // LOGIN CORRECTO
+        // ============================================
+
         window.location.href = "/admin";
+
 
     } catch (error) {
 

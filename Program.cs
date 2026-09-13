@@ -1,4 +1,5 @@
 using CoraConfecciones.Data;
+using Microsoft.AspNetCore.RateLimiting;
 using CoraConfecciones.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -94,11 +95,10 @@ builder.Services.AddRateLimiter(options =>
             // Máximo 5 intentos
             limiterOptions.PermitLimit = 5;
 
-            // Cada 5 minutos
+            // Durante 5 minutos
             limiterOptions.Window =
                 TimeSpan.FromMinutes(5);
 
-            // No ponemos solicitudes en espera
             limiterOptions.QueueLimit = 0;
 
             limiterOptions.QueueProcessingOrder =
@@ -108,7 +108,30 @@ builder.Services.AddRateLimiter(options =>
 
     options.RejectionStatusCode =
         StatusCodes.Status429TooManyRequests;
+
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.StatusCode =
+            StatusCodes.Status429TooManyRequests;
+
+        context.HttpContext.Response.ContentType =
+            "application/json";
+
+        await context.HttpContext.Response.WriteAsJsonAsync(
+            new
+            {
+                mensaje =
+                    "Demasiados intentos. Esperá 5 minutos antes de volver a intentar."
+            },
+            cancellationToken
+        );
+    };
 });
+
+
+// ============================================
+// CREAR APLICACIÓN
+// ============================================
 
 var app = builder.Build();
 
@@ -117,15 +140,48 @@ var app = builder.Build();
 // HTTPS / SEGURIDAD
 // ============================================
 
-// HSTS solamente en producción
 if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
+
+// ============================================
+// ARCHIVOS HTML / CSS / JS
+// ============================================
+
+app.UseDefaultFiles();
+
+app.UseStaticFiles();
+
+app.UseRateLimiter();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
+// ============================================
+// HTTPS / SEGURIDAD
+// ============================================
+
+// HSTS solamente en producción
+// ============================================
+// HTTPS / SEGURIDAD
+// ============================================
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
 }
 
 // Redirige HTTP a HTTPS cuando el hosting
 // tiene HTTPS correctamente configurado
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
 
 
 // ============================================
@@ -209,7 +265,7 @@ app.MapPost(
                     a => a.Usuario == datos.Usuario
                 );
 
-        if(administrador == null)
+        if (administrador == null)
         {
             return Results.Unauthorized();
         }
@@ -224,7 +280,7 @@ app.MapPost(
                 datos.Password
             );
 
-        if(resultado == PasswordVerificationResult.Failed)
+        if (resultado == PasswordVerificationResult.Failed)
         {
             return Results.Unauthorized();
         }
@@ -257,13 +313,16 @@ app.MapPost(
                 .AuthenticationScheme,
             principal
         );
-      return Results.Ok(
+
+        return Results.Ok(
             new
             {
                 mensaje = "Login correcto"
             }
         );
-    
+    }
+)
+.RequireRateLimiting("login");
 
 // ============================================
 // LOGOUT
