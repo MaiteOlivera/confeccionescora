@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,21 +34,38 @@ builder.Services
     )
     .AddCookie(options =>
     {
+        // Página de login
         options.LoginPath = "/login.html";
 
+        // Nombre de la cookie
         options.Cookie.Name = "CoraAdmin";
 
+        // Evita que JavaScript pueda acceder a la cookie
         options.Cookie.HttpOnly = true;
 
-        options.Cookie.SameSite =
-            SameSiteMode.Strict;
+        // Ayuda a proteger contra ataques CSRF
+        options.Cookie.SameSite = SameSiteMode.Strict;
 
+        // En producción la cookie SOLO funciona mediante HTTPS.
+        // En localhost permite HTTP para poder seguir probando.
+        options.Cookie.SecurePolicy =
+            builder.Environment.IsDevelopment()
+                ? CookieSecurePolicy.SameAsRequest
+                : CookieSecurePolicy.Always;
+
+        // La sesión dura 2 horas
         options.ExpireTimeSpan =
             TimeSpan.FromHours(2);
 
+        // Renueva el tiempo de sesión mientras
+        // el administrador continúa usando el panel
+        options.SlidingExpiration = true;
+
+        // Si alguien intenta acceder a una API sin estar logueado,
+        // devuelve 401 en vez de mandarlo al HTML del login.
         options.Events.OnRedirectToLogin = context =>
         {
-            if(context.Request.Path.StartsWithSegments("/api"))
+            if (context.Request.Path.StartsWithSegments("/api"))
             {
                 context.Response.StatusCode =
                     StatusCodes.Status401Unauthorized;
@@ -63,17 +81,61 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+// ============================================
+// LÍMITE DE INTENTOS DE LOGIN
+// ============================================
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter(
+        "login",
+        limiterOptions =>
+        {
+            // Máximo 5 intentos
+            limiterOptions.PermitLimit = 5;
+
+            // Cada 5 minutos
+            limiterOptions.Window =
+                TimeSpan.FromMinutes(5);
+
+            // No ponemos solicitudes en espera
+            limiterOptions.QueueLimit = 0;
+
+            limiterOptions.QueueProcessingOrder =
+                QueueProcessingOrder.OldestFirst;
+        }
+    );
+
+    options.RejectionStatusCode =
+        StatusCodes.Status429TooManyRequests;
+});
 
 var app = builder.Build();
 
 
 // ============================================
-// ARCHIVOS HTML / CSS / JS
+// HTTPS / SEGURIDAD
 // ============================================
 
+// HSTS solamente en producción
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
+// Redirige HTTP a HTTPS cuando el hosting
+// tiene HTTPS correctamente configurado
+app.UseHttpsRedirection();
+
+
+// ============================================
+// ARCHIVOS HTML / CSS / JS
+// ============================================
 app.UseDefaultFiles();
 
 app.UseStaticFiles();
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 
@@ -195,16 +257,13 @@ app.MapPost(
                 .AuthenticationScheme,
             principal
         );
-
-        return Results.Ok(
+      return Results.Ok(
             new
             {
                 mensaje = "Login correcto"
             }
         );
-    }
-);
-
+    
 
 // ============================================
 // LOGOUT
